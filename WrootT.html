@@ -382,7 +382,6 @@ dialog::backdrop{background:rgba(8,20,15,.5)}
       <p class="eyebrow">Patrimonio total</p>
       <p class="rail-net num" id="rail-net"></p>
       <p class="rail-user"><b id="rail-user"></b><span id="rail-mail"></span></p>
-      <p class="demo-note">Prototipo con datos de ejemplo. Nada se guarda al cerrar la página.</p>
       <button class="rail-btn" type="button" data-action="reset" id="btn-reset">Restablecer datos de ejemplo</button>
       <button class="rail-btn" type="button" data-action="logout" id="btn-logout">Cerrar sesión</button>
     </div>
@@ -831,8 +830,6 @@ function recRow(r, full) {
     <span class="right"><span class="amt num">${fmt(r.amount)}</span><span class="pill ${d.cls}">${d.text}</span></span>${acts}</li>`;
 }
 const goalPct = g => g.target > 0 ? Math.min(1, g.saved / g.target) : 0;
-const footer = () => `<p class="foot"><span>Wroot · prototipo académico con datos de ejemplo. Nada se guarda: al cerrar o recargar la página vuelve a empezar.</span><button type="button" data-action="reset">Restablecer datos</button><button type="button" data-action="logout">Cerrar sesión</button></p>`;
-
 // ---------- Resumen
 function viewResumen() {
   const rows = sources(), tot = sum(rows.map(r => Math.max(0, r.amount))) || 1;
@@ -1288,8 +1285,7 @@ const ACTIONS = {
         ${field('Desde', `<select id="f-from" name="from">${walletOpts(state.wallets[0].id)}</select>`)}
         ${field('Hacia', `<select id="f-to" name="to">${walletOpts(state.wallets[1].id)}</select>`)}
         ${field('Monto (COP)', money('amount'), '', 'full')}
-      </div><p class="note">En el prototipo el traslado solo se registra. En la versión final se ejecutaría con la autorización de cada entidad.</p>`,
-      submit: 'Mover',
+          submit: 'Mover',
       onSubmit: d => {
         const amount = toNum(d.amount), a = walletById(d.from), b = walletById(d.to);
         if (!a || !b || a === b) return 'Elige dos billeteras distintas.';
