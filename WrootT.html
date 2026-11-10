@@ -7,8 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Layout: riel lateral color pino + columna de contenido con scroll propio.
-     Pieza central: diagrama de raíces donde cada billetera converge en el patrimonio total. */
+
+  
   --bg:#F1F4EC; --surface:#FFFFFF; --surface-2:#F6F8F2; --ink:#13241C; --muted:#5A6A61; --line:#DAE1D5;
   --brand:#0F5441; --on-brand:#F0F8F2; --sprout:#B7E05A;
   --pos:#167A52; --warn:#A96A00; --warn-bg:#FBF0D8; --crit:#BE3A29; --on-crit:#FFFFFF; --crit-bg:#FBE6E1; --ok-bg:#E3F1E7;
@@ -58,7 +58,7 @@ h1,h2,h3{font-family:var(--font-display);text-wrap:balance;letter-spacing:-.01em
 
 [hidden]{display:none!important}
 
-/* ---------- acceso */
+
 body.locked .app{display:none}
 body:not(.locked) .auth{display:none}
 .auth{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);overflow-y:auto}
@@ -83,7 +83,7 @@ body:not(.locked) .auth{display:none}
   .auth-panel{align-items:flex-start;padding:24px 20px 32px}
 }
 
-/* ---------- estructura */
+
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);height:100%}
 .rail{background:var(--rail);color:var(--rail-ink);display:flex;flex-direction:column;gap:28px;padding:22px 14px 18px;overflow-y:auto;border-right:1px solid var(--rail-line)}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;padding:0 8px}
@@ -111,7 +111,7 @@ body:not(.locked) .auth{display:none}
 #view{padding:22px 28px 40px;display:flex;flex-direction:column;gap:18px;max-width:1240px}
 .tabbar{display:none}
 
-/* ---------- controles */
+
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 13px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
 .btn.primary{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
@@ -146,7 +146,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .seg label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:var(--shadow);outline:1px solid var(--line)}
 .seg label:has(input:focus-visible){outline:2px solid var(--brand)}
 
-/* ---------- superficies */
+
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .card-head h2{font-size:18px;font-weight:700;min-width:0;overflow-wrap:anywhere}
@@ -160,7 +160,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .foot{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--muted);padding-top:6px}
 .foot button{background:none;border:0;padding:0;color:var(--brand);font-weight:600;cursor:pointer;font-size:12px;text-decoration:underline}
 
-/* ---------- héroe: raíces */
+
 .hero{padding:20px 22px 18px}
 .roots{display:grid;grid-template-columns:minmax(250px,330px) minmax(70px,1fr) auto;align-items:center}
 .srcs{display:flex;flex-direction:column}
@@ -180,7 +180,6 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .total .muted b{color:var(--ink)}
 .hero-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-/* ---------- indicadores */
 .card.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;overflow:hidden}
 .kpis.four{grid-template-columns:repeat(4,minmax(0,1fr))}
 .kpi{padding:16px 20px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -188,7 +187,6 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .kpi .val{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;overflow-wrap:anywhere}
 .kpi small{font-size:12px;color:var(--muted)}
 
-/* ---------- listas */
 .rows > li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .rows > li:first-child{border-top:0}
 .rows .grow{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
@@ -219,7 +217,6 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .bars .track i{display:block;height:100%;width:var(--p);background:var(--brand);border-radius:4px}
 .bars small{color:var(--muted)}
 
-/* ---------- metas */
 .goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
 .goal{display:flex;flex-direction:column;gap:10px}
 .goal h3{font-size:17px;font-weight:700;min-width:0;overflow-wrap:anywhere}
@@ -240,7 +237,6 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
 .rem-form{display:grid;grid-template-columns:minmax(0,1fr) 160px auto;gap:8px;margin-bottom:6px}
 .rem.done b{text-decoration:line-through;color:var(--muted)}
 
-/* ---------- portafolio */
 .alloc{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px;margin:4px 0 14px}
 .alloc i{display:block;background:var(--c);min-width:3px}
 .legend{display:flex;flex-direction:column;gap:8px;font-size:14px}
@@ -268,7 +264,6 @@ td small{display:block;color:var(--muted);font-size:12px}
 .keys i.sq{height:10px;width:10px;border:0;border-radius:2px;background:var(--brand)}
 .keys i.sq.exp{background:var(--k2)}
 
-/* ---------- gráficos */
 [data-chart]{min-width:0}
 [data-chart] svg{display:block;max-width:100%}
 .grid{stroke:var(--line);stroke-width:1}
@@ -284,7 +279,6 @@ td small{display:block;color:var(--muted);font-size:12px}
 .ln-base-area{fill:var(--line);opacity:.9}
 .ln-dot{fill:var(--brand);stroke:var(--surface);stroke-width:2}
 
-/* ---------- modal y avisos */
 dialog{border:1px solid var(--line);border-radius:16px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 32px));max-height:calc(100% - 32px);box-shadow:0 24px 60px -20px rgba(0,0,0,.45)}
 dialog::backdrop{background:rgba(8,20,15,.5)}
 .modal-form{display:flex;flex-direction:column;gap:14px;padding:22px}
@@ -295,8 +289,7 @@ dialog::backdrop{background:rgba(8,20,15,.5)}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100vw - 32px);text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
-
-/* ---------- pantallas medianas y pequeñas */
+  
 @media (max-width:1080px){
   .grid2{grid-template-columns:minmax(0,1fr)}
   .roots{grid-template-columns:minmax(0,1fr)}
@@ -418,7 +411,6 @@ dialog::backdrop{background:rgba(8,20,15,.5)}
 <script>
 (() => {
 'use strict';
-// ============ Wroot · núcleo: utilidades, datos de ejemplo y cálculos ============
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -426,7 +418,6 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const sum = a => a.reduce((x, y) => x + y, 0);
 const f1 = n => +n.toFixed(1);
 
-// ---------- dinero
 const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const fmt = n => COP.format(Math.round(n || 0));
 const fmtSigned = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
@@ -442,7 +433,6 @@ const pct = (x, d = 0) => (x * 100).toFixed(d).replace('.', ',') + '%';
 const toNum = v => Math.round(Number(String(v ?? '').replace(',', '.')) || 0);
 const toDec = v => Number(String(v ?? '').replace(',', '.')) || 0;
 
-// ---------- fechas (cadenas AAAA-MM-DD en hora local)
 const pad = n => String(n).padStart(2, '0');
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -486,14 +476,12 @@ function whenInfo(date) {
   return { cls: n <= 7 ? 'warn' : 'ok', text: `En ${n} días`, n };
 }
 
-// ---------- catálogos
 const CATS = {
   gasto: ['Vivienda', 'Mercado', 'Transporte', 'Restaurantes', 'Servicios', 'Suscripciones', 'Salud', 'Ocio', 'Educación', 'Compras', 'Otros gastos'],
   ingreso: ['Salario', 'Freelance', 'Rendimientos', 'Reembolsos', 'Otros ingresos'],
 };
 const FREQS = { semanal: 'Semanal', mensual: 'Mensual', anual: 'Anual' };
 const REC_KINDS = ['Suscripción', 'Servicio', 'Vivienda', 'Crédito', 'Otro'];
-// Supuestos del simulador: volatilidad y tendencia diarias, y tasa anual de ejemplo. No son datos de mercado.
 const CLASSES = {
   'Renta fija': { vol: 0.0002, drift: 0.00026, rate: 9, color: 'var(--k1)' },
   'Fondo de inversión': { vol: 0.002, drift: 0.0003, rate: 8, color: 'var(--k3)' },
@@ -511,7 +499,6 @@ const WALLET_PRESETS = {
   'Otra': { kind: 'Otra', color: '#6B7A72' },
 };
 
-// ---------- datos de ejemplo
 function mulberry32(a) {
   return function () {
     a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -609,11 +596,9 @@ function seed() {
   return { v: 1, wallets, tx, goals, recurring, reminders, holdings };
 }
 
-// ---------- estado: vive solo en memoria. Nada se guarda; al cerrar o recargar la página se pierde.
-let state = null;    // datos financieros de la sesión
-let session = null;  // { name, email } de quien entró; la contraseña nunca se conserva
+let state = null;
+let session = null;
 
-// ---------- cálculos
 const txSign = t => t.type === 'ingreso' ? 1 : t.type === 'gasto' ? -1 : (t.dir === 'in' ? 1 : -1);
 function balances() {
   const b = {}; state.wallets.forEach(w => b[w.id] = w.initial);
@@ -634,7 +619,7 @@ function monthStats(k) {
 }
 const sortedTx = () => state.tx.map((t, i) => [t, i]).sort((a, b) => a[0].date < b[0].date ? 1 : a[0].date > b[0].date ? -1 : b[1] - a[1]).map(x => x[0]);
 const monthlyEq = r => r.freq === 'mensual' ? r.amount : r.freq === 'anual' ? r.amount / 12 : r.amount * 52 / 12;
-// Siguiente fecha de un pago. `anchor` es el día del mes pactado: un pago del 31 vuelve al 31 después de pasar por febrero.
+
 function advance(date, freq, anchor) {
   if (freq === 'semanal') return addDays(date, 7);
   const d = parse(date), first = new Date(d.getFullYear(), d.getMonth() + (freq === 'anual' ? 12 : 1), 1);
@@ -642,14 +627,12 @@ function advance(date, freq, anchor) {
   first.setDate(Math.min(anchor || d.getDate(), last));
   return iso(first);
 }
-// Cuántas veces cae un pago entre hoy y los próximos `days` días (los vencidos cuentan una vez).
 function occurrences(r, days) {
   const T = todayISO(); let d = r.next, n = 0;
   while (diffDays(d, T) <= days && n < 60) { n++; d = advance(d, r.freq, r.day); }
   return n;
 }
 const sortedRec = () => [...state.recurring].sort((a, b) => a.next < b.next ? -1 : a.next > b.next ? 1 : 0);
-// Alertas: pagos que vencen en 7 días o menos (o ya vencidos) y recordatorios pendientes en la misma ventana.
 function alerts() {
   const T = todayISO(), out = [];
   sortedRec().forEach(r => { if (diffDays(r.next, T) <= 7) out.push({ auto: true, id: r.id, title: 'Pagar ' + r.name, date: r.next, amount: r.amount }); });
@@ -682,7 +665,6 @@ function portHistory() {
   return pts;
 }
 
-// ============ Wroot · vistas y gráficos ============
 const I = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/>',
   flow: '<path d="M7 4v14m0 0-3.5-3.5M7 18l3.5-3.5"/><path d="M17 20V6m0 0-3.5 3.5M17 6l3.5 3.5"/>',
@@ -708,7 +690,6 @@ const freshUi = () => ({
 });
 let ui = freshUi();
 
-// ---------- gráficos SVG
 function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function ticks(lo, hi, n = 4) {
   if (!(hi > lo)) hi = lo + 1;
@@ -752,7 +733,7 @@ function lineChart(w, h, { series, labels, aria }) {
     s += `<path class="ln ${sr.cls}" d="${d}"/>`;
     if (sr.dot) { const li = sr.pts.length - 1; s += `<circle class="ln-dot" cx="${f1(x(li))}" cy="${f1(y(sr.pts[li]))}" r="4.5"/>`; }
   });
-  // Se omite la etiqueta que quedaría encima de la anterior o de la última.
+
   const lastL = labels[labels.length - 1]; let prevX = -Infinity;
   labels.forEach(l => {
     const lx = x(l.i), isLast = l === lastL, gap = 34 + l.text.length * 3.2;
@@ -812,7 +793,6 @@ function chartRoots(w) {
 const CHARTS = { flow: chartFlow, port: chartPort, sim: chartSim, roots: chartRoots };
 function drawCharts() { $$('[data-chart]').forEach(el => { const w = Math.floor(el.clientWidth); if (w > 40) el.innerHTML = CHARTS[el.dataset.chart](w); }); }
 
-// ---------- piezas compartidas
 function txRow(t, withActs) {
   const w = walletById(t.wallet), s = txSign(t);
   const amt = t.type === 'interno' ? `<span class="amt int num">${s > 0 ? '+' : '−'}${fmt(t.amount)}</span>`
@@ -830,7 +810,6 @@ function recRow(r, full) {
     <span class="right"><span class="amt num">${fmt(r.amount)}</span><span class="pill ${d.cls}">${d.text}</span></span>${acts}</li>`;
 }
 const goalPct = g => g.target > 0 ? Math.min(1, g.saved / g.target) : 0;
-// ---------- Resumen
 function viewResumen() {
   const rows = sources(), tot = sum(rows.map(r => Math.max(0, r.amount))) || 1;
   const mk = todayISO().slice(0, 7), ms = monthStats(mk), bal = ms.inc - ms.exp;
@@ -891,7 +870,6 @@ function viewResumen() {
   ${footer()}`;
 }
 
-// ---------- Ingresos y gastos
 const opts = (list, sel) => list.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}"${String(v) === String(sel) ? ' selected' : ''}>${esc(l)}</option>`; }).join('');
 function filteredTx() {
   const f = ui.filters, q = f.q.trim().toLowerCase();
@@ -941,7 +919,6 @@ function viewMovimientos() {
   ${footer()}`;
 }
 
-// ---------- Metas y pagos
 function goalCard(g) {
   const p = goalPct(g), left = Math.max(0, g.target - g.saved), days = diffDays(g.deadline, todayISO());
   const months = Math.max(1, Math.ceil(days / 30.44));
@@ -992,7 +969,6 @@ function viewMetas() {
   ${footer()}`;
 }
 
-// ---------- Portafolio
 const fmtUnits = u => Number.isInteger(u) ? String(u) : u.toLocaleString('es-CO', { maximumFractionDigits: 4 });
 function simOut() {
   const d = simData(), fin = d.base[d.base.length - 1], paid = d.paid[d.paid.length - 1];
@@ -1062,7 +1038,6 @@ const ROUTES = {
   portafolio: { title: 'Portafolio', icon: 'chart', render: viewPortafolio },
 };
 
-// ============ Wroot · render, formularios y acciones ============
 function renderChrome() {
   const nav = Object.entries(ROUTES).map(([k, r]) => `<a href="#${k}" data-nav="${k}" class="${k === ui.route ? 'on' : ''}"${k === ui.route ? ' aria-current="page"' : ''}>${icon(r.icon, 20)}<span>${r.title}</span></a>`).join('');
   $('#rail-nav').innerHTML = nav;
@@ -1076,7 +1051,7 @@ function renderChrome() {
   $('#title').textContent = ROUTES[ui.route].title;
   const t = LONG.format(new Date()); $('#today').textContent = t.charAt(0).toUpperCase() + t.slice(1);
 }
-// El contenido se vuelve a pintar entero; estas dos funciones devuelven el foco del teclado a donde estaba.
+
 function focusKey(el) {
   if (!el || el === document.body || el.closest('#modal')) return null;
   if (el.id) return '#' + CSS.escape(el.id);
@@ -1108,7 +1083,6 @@ let toastTimer;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
 function commit(msg) { render(); if (msg) toast(msg); }
 
-// ---------- modal
 let modalOpener = null;
 function openModal({ title, body, submit = 'Guardar', danger = false, onSubmit, onOpen }) {
   const d = $('#modal');
@@ -1139,7 +1113,6 @@ const money = (name, value = '', extra = '') => `<input id="f-${name}" name="${n
 const dateInput = (name, value) => `<input id="f-${name}" name="${name}" type="date" required max="9999-12-31" value="${value}">`;
 const BAD_DATE = 'Escribe una fecha válida, con un año de cuatro cifras.';
 
-// ---------- formularios
 function txForm(t) {
   const isNew = !t; t = t || { type: 'gasto', amount: '', cat: '', wallet: state.wallets[0] && state.wallets[0].id, date: todayISO(), desc: '' };
   openModal({
@@ -1261,7 +1234,6 @@ function holdForm() {
   });
 }
 
-// ---------- acciones
 const byId = (list, id) => list.find(x => x.id === id);
 const ACTIONS = {
   'close-modal': closeModal,
@@ -1372,7 +1344,6 @@ const ACTIONS = {
   'reset': () => confirmModal('Restablecer datos de ejemplo', 'Se borra todo lo que registraste en este navegador y vuelven los datos de demostración.', 'Restablecer', () => { state = seed(); const r = ui.route; ui = freshUi(); ui.route = r; commit('Datos restablecidos'); }),
 };
 
-// ---------- eventos
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-action]');
   if (el && el.type !== 'checkbox') { const fn = ACTIONS[el.dataset.action]; if (fn) fn(el.dataset, el); return; }
@@ -1408,7 +1379,6 @@ $('#modal').addEventListener('close', () => refocus(modalOpener));
 window.addEventListener('hashchange', route);
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawCharts, 120); });
 
-// ---------- acceso simulado: valida el formulario y entra. No guarda ni envía nada.
 let authMode = 'registro';
 function setAuthMode(m) {
   authMode = m; const reg = m === 'registro';
@@ -1444,8 +1414,7 @@ function logout() {
   setTimeout(() => $('#auth-email').focus(), 0);
 }
 
-// ---------- arranque: siempre empieza en la pantalla de acceso
-try { localStorage.removeItem('wroot.v1'); } catch (e) { /* versión anterior guardaba aquí; ya no se usa */ }
+try { localStorage.removeItem('wroot.v1'); } catch (e) {  }
 setAuthMode('registro');
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawCharts);
 
