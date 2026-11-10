@@ -1413,7 +1413,7 @@ function logout() {
   setTimeout(() => $('#auth-email').focus(), 0);
 }
 
-try { localStorage.removeItem('wroot.v1'); } catch (e) {  }
+try { localStorage.removeItem('wroot.v1'); } catch (e) { /* versión anterior guardaba aquí; ya no se usa */ }
 setAuthMode('registro');
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawCharts);
 
@@ -1421,3 +1421,4 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawCharts
 </script>
 </body>
 </html>
+
