@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wroot</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: riel lateral color pino + columna de contenido con scroll propio.
+     Pieza central: diagrama de raíces donde cada billetera converge en el patrimonio total. */
+  --bg:#F1F4EC; --surface:#FFFFFF; --surface-2:#F6F8F2; --ink:#13241C; --muted:#5A6A61; --line:#DAE1D5;
+  --brand:#0F5441; --on-brand:#F0F8F2; --sprout:#B7E05A;
+  --pos:#167A52; --warn:#A96A00; --warn-bg:#FBF0D8; --crit:#BE3A29; --on-crit:#FFFFFF; --crit-bg:#FBE6E1; --ok-bg:#E3F1E7;
+  --rail:#0C3A2D; --rail-ink:#E3EEE6; --rail-muted:#8DB09F; --rail-line:#1C4F3F;
+  --k1:#1B7F56; --k2:#C98A0B; --k3:#2F6FB3; --k4:#8A4FA8; --k5:#D2553F;
+  --shadow:0 1px 2px rgba(19,36,28,.06), 0 8px 24px -16px rgba(19,36,28,.18);
+  --font-display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --font-body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1713; --surface:#14211B; --surface-2:#1A2A22; --ink:#E6EEE8; --muted:#93A59B; --line:#273B31;
+    --brand:#4FBF8F; --on-brand:#06231A; --sprout:#C3E96B;
+    --pos:#5FD0A0; --warn:#E6B450; --warn-bg:#3A2E12; --crit:#F08571; --on-crit:#2B0D08; --crit-bg:#3D1D17; --ok-bg:#173326;
+    --rail:#09110E; --rail-ink:#DCE8E0; --rail-muted:#7F998C; --rail-line:#1A2A22;
+    --k1:#5FD0A0; --k2:#E6B450; --k3:#6FA8E6; --k4:#B98AD6; --k5:#EE8672;
+    --shadow:none;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1713; --surface:#14211B; --surface-2:#1A2A22; --ink:#E6EEE8; --muted:#93A59B; --line:#273B31;
+  --brand:#4FBF8F; --on-brand:#06231A; --sprout:#C3E96B;
+  --pos:#5FD0A0; --warn:#E6B450; --warn-bg:#3A2E12; --crit:#F08571; --on-crit:#2B0D08; --crit-bg:#3D1D17; --ok-bg:#173326;
+  --rail:#09110E; --rail-ink:#DCE8E0; --rail-muted:#7F998C; --rail-line:#1A2A22;
+  --k1:#5FD0A0; --k2:#E6B450; --k3:#6FA8E6; --k4:#B98AD6; --k5:#EE8672;
+  --shadow:none;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.pos{color:var(--pos)}
+.neg{color:var(--crit)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+.ic{flex:none}
+
+[hidden]{display:none!important}
+
+/* ---------- acceso */
+body.locked .app{display:none}
+body:not(.locked) .auth{display:none}
+.auth{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);overflow-y:auto}
+.auth-brand{background:var(--rail);color:var(--rail-ink);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:48px 56px}
+.auth-brand .logo{font-size:44px;padding:0;gap:10px}
+.auth-tag{font-family:var(--font-display);font-size:36px;font-weight:700;line-height:1.08;letter-spacing:-.02em;text-wrap:balance;max-width:14ch}
+.auth-sub{color:var(--rail-muted);max-width:34ch}
+.auth-panel{display:flex;align-items:center;justify-content:center;padding:32px 20px}
+.auth-form{width:min(380px,100%);display:flex;flex-direction:column;gap:14px}
+.auth-form h1{font-size:30px;font-weight:700;line-height:1.1}
+.auth-form input{padding:10px 12px}
+.auth-submit{padding:11px 14px;font-size:15px;margin-top:2px}
+.auth-switch{font-size:14px;color:var(--muted)}
+.auth-switch button{background:none;border:0;padding:0;color:var(--brand);font-weight:700;cursor:pointer;text-decoration:underline}
+@media (max-width:760px){
+  .auth{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  .auth-brand{padding:26px 20px;gap:8px}
+  .auth-brand .logo{font-size:30px}
+  .auth-brand .logo svg{width:30px;height:30px}
+  .auth-tag{font-size:22px;max-width:none}
+  .auth-sub{display:none}
+  .auth-panel{align-items:flex-start;padding:24px 20px 32px}
+}
+
+/* ---------- estructura */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);height:100%}
+.rail{background:var(--rail);color:var(--rail-ink);display:flex;flex-direction:column;gap:28px;padding:22px 14px 18px;overflow-y:auto;border-right:1px solid var(--rail-line)}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;padding:0 8px}
+.logo svg{color:var(--sprout)}
+.logo-sm{display:none}
+.rail-nav{display:flex;flex-direction:column;gap:4px}
+.rail-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--rail-muted);font-weight:600}
+.rail-nav a:hover{color:var(--rail-ink);background:var(--rail-line)}
+.rail-nav a.on{color:var(--rail);background:var(--sprout)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:14px 10px 0;border-top:1px solid var(--rail-line)}
+.rail-foot .eyebrow{color:var(--rail-muted)}
+.rail-net{font-family:var(--font-display);font-size:22px;font-weight:700;overflow-wrap:anywhere}
+.rail-user{display:flex;flex-direction:column;font-size:13px;line-height:1.35;margin-top:8px;overflow-wrap:anywhere}
+.rail-user span{color:var(--rail-muted);font-size:12px}
+.demo-note{font-size:12px;color:var(--rail-muted);line-height:1.4;margin-top:4px}
+.rail-btn{margin-top:6px;background:none;border:1px solid var(--rail-line);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;color:var(--rail-ink);cursor:pointer;text-align:left}
+.rail-btn:hover{border-color:var(--rail-muted)}
+
+.main{overflow-y:auto;min-width:0}
+.topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 28px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-title{display:flex;align-items:center;gap:10px;min-width:0}
+.topbar h1{font-size:24px;font-weight:700;line-height:1.15}
+.topbar .muted{font-size:13px}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex:none}
+#view{padding:22px 28px 40px;display:flex;flex-direction:column;gap:18px;max-width:1240px}
+.tabbar{display:none}
+
+/* ---------- controles */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 13px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{background:var(--crit);border-color:var(--crit);color:var(--on-crit)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn.ghost{background:none;border-color:transparent;color:var(--brand)}
+.btn.ghost:hover{background:var(--surface-2)}
+.icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.icon-btn:hover{border-color:var(--muted)}
+.icon-btn.plain{border-color:transparent;background:none;width:30px;height:30px;color:var(--muted)}
+.icon-btn.plain:hover{color:var(--ink);background:var(--surface-2)}
+.badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--crit);color:var(--on-crit);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--pos)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c,var(--muted));flex:none}
+
+input,select{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-width:0;width:100%}
+input:hover,select:hover{border-color:var(--muted)}
+input[type=range]{padding:0;border:0;accent-color:var(--brand);background:none}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);flex:none}
+.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600}
+.field small{font-weight:400;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px}
+.seg label{position:relative;text-align:center;padding:7px 8px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;color:var(--muted)}
+.seg input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.seg label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:var(--shadow);outline:1px solid var(--line)}
+.seg label:has(input:focus-visible){outline:2px solid var(--brand)}
+
+/* ---------- superficies */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.card-head h2{font-size:18px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.card-head .acts{display:flex;gap:8px;flex-wrap:wrap}
+.section-title{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px}
+.section-title h2{font-size:21px;font-weight:700}
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.empty{color:var(--muted);padding:18px 0;text-align:center}
+.note{font-size:13px;color:var(--muted)}
+.foot{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--muted);padding-top:6px}
+.foot button{background:none;border:0;padding:0;color:var(--brand);font-weight:600;cursor:pointer;font-size:12px;text-decoration:underline}
+
+/* ---------- héroe: raíces */
+.hero{padding:20px 22px 18px}
+.roots{display:grid;grid-template-columns:minmax(250px,330px) minmax(70px,1fr) auto;align-items:center}
+.srcs{display:flex;flex-direction:column}
+.src{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;height:52px;padding-right:10px}
+.chip{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--c);color:#fff;font-family:var(--font-display);font-weight:700;font-size:15px}
+.src-name{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.src-name b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-name small{font-size:12px;color:var(--muted)}
+.src-amt{font-weight:600;font-size:14px}
+.src-share{display:none}
+.flow{align-self:stretch;min-width:0}
+.flow svg{display:block}
+.root{opacity:.78}
+.trunk{fill:var(--ink)}
+.total{padding-left:22px;max-width:360px;min-width:0}
+.bignum{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.03em;margin:4px 0 8px;overflow-wrap:anywhere}
+.total .muted b{color:var(--ink)}
+.hero-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ---------- indicadores */
+.card.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;overflow:hidden}
+.kpis.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpi{padding:16px 20px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi:first-child{border-left:0}
+.kpi .val{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;overflow-wrap:anywhere}
+.kpi small{font-size:12px;color:var(--muted)}
+
+/* ---------- listas */
+.rows > li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.rows > li:first-child{border-top:0}
+.rows .grow{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.rows .grow b{font-weight:600;overflow-wrap:anywhere}
+.rows .grow small{font-size:12px;color:var(--muted)}
+.rows .right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.rows .amt{font-weight:600}
+.rows .acts{display:flex;gap:2px;flex:none;align-items:center}
+
+.tx{display:grid;grid-template-columns:70px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.tx:first-child{border-top:0}
+.tx .when{font-size:13px;color:var(--muted)}
+.tx .what{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.tx .what b{font-weight:600;overflow-wrap:anywhere}
+.tx .what small{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tx .amt{font-weight:600;text-align:right;white-space:nowrap}
+.tx .amt.int{color:var(--muted)}
+.tx .acts{display:flex;gap:2px;width:62px;justify-content:flex-end}
+.txs.compact .tx{grid-template-columns:62px minmax(0,1fr) auto}
+
+.toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.4fr);gap:10px}
+.summary{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;padding:2px 0 12px;border-bottom:1px solid var(--line);margin-bottom:2px;font-size:14px}
+.summary b{font-family:var(--font-display);font-size:16px;font-weight:700}
+
+.bars{display:flex;flex-direction:column;gap:12px}
+.bars li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:14px}
+.bars .track{grid-column:1/-1;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.bars .track i{display:block;height:100%;width:var(--p);background:var(--brand);border-radius:4px}
+.bars small{color:var(--muted)}
+
+/* ---------- metas */
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.goal{display:flex;flex-direction:column;gap:10px}
+.goal h3{font-size:17px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.goal-top{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.progress{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.progress i{display:block;height:100%;width:var(--p);background:var(--brand);border-radius:5px}
+.progress.done i{background:var(--pos)}
+.goal-nums{display:flex;justify-content:space-between;gap:8px;font-size:14px;flex-wrap:wrap}
+.goal-nums b{font-family:var(--font-display);font-size:19px}
+.goal .acts{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:4px}
+.goal .acts .sp{flex:1}
+.mini-goal{display:flex;flex-direction:column;gap:5px;padding:9px 0;border-top:1px solid var(--line)}
+.mini-goal:first-child{border-top:0;padding-top:0}
+.mini-goal div{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.mini-goal b{min-width:0;overflow-wrap:anywhere}
+.mini-goal .progress{height:7px}
+
+.rem-form{display:grid;grid-template-columns:minmax(0,1fr) 160px auto;gap:8px;margin-bottom:6px}
+.rem.done b{text-decoration:line-through;color:var(--muted)}
+
+/* ---------- portafolio */
+.alloc{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px;margin:4px 0 14px}
+.alloc i{display:block;background:var(--c);min-width:3px}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend li span:nth-child(2){flex:1}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th:first-child,td:first-child{text-align:left;padding-left:0;white-space:normal;min-width:150px}
+td:last-child,th:last-child{padding-right:0}
+td small{display:block;color:var(--muted);font-size:12px}
+.sim{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:24px;align-items:start}
+.sim-form{display:flex;flex-direction:column;gap:12px}
+.sim-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:10px}
+.sim-nums div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sim-nums b{font-family:var(--font-display);font-size:22px;letter-spacing:-.02em;overflow-wrap:anywhere}
+.sim-nums small{font-size:12px;color:var(--muted)}
+.keys{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:6px}
+.keys span{display:inline-flex;align-items:center;gap:6px}
+.keys i{display:inline-block;width:16px;height:0;border-top:2px solid var(--brand)}
+.keys i.dash{border-top-style:dashed;border-color:var(--muted)}
+.keys i.fill{height:10px;border:0;background:var(--line);border-radius:2px}
+.keys i.sq{height:10px;width:10px;border:0;border-radius:2px;background:var(--brand)}
+.keys i.sq.exp{background:var(--k2)}
+
+/* ---------- gráficos */
+[data-chart]{min-width:0}
+[data-chart] svg{display:block;max-width:100%}
+.grid{stroke:var(--line);stroke-width:1}
+.axis{fill:var(--muted);font-size:11px;font-family:var(--font-body);font-variant-numeric:tabular-nums}
+.axis.now{fill:var(--ink);font-weight:700}
+.bar-inc{fill:var(--brand)}
+.bar-exp{fill:var(--k2)}
+.ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.ln-main{stroke:var(--brand)}
+.ln-main-area{fill:var(--brand);opacity:.12}
+.ln-alt{stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1.5}
+.ln-base{stroke:none}
+.ln-base-area{fill:var(--line);opacity:.9}
+.ln-dot{fill:var(--brand);stroke:var(--surface);stroke-width:2}
+
+/* ---------- modal y avisos */
+dialog{border:1px solid var(--line);border-radius:16px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 32px));max-height:calc(100% - 32px);box-shadow:0 24px 60px -20px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(8,20,15,.5)}
+.modal-form{display:flex;flex-direction:column;gap:14px;padding:22px}
+.modal-form h2{font-size:21px;font-weight:700}
+.err{color:var(--crit);font-size:13px;font-weight:600}
+.err:empty{display:none}
+.modal-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100vw - 32px);text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+
+/* ---------- pantallas medianas y pequeñas */
+@media (max-width:1080px){
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .roots{grid-template-columns:minmax(0,1fr)}
+  .flow{display:none}
+  .total{order:-1;padding:0 0 14px;max-width:none}
+  .src{height:auto;padding:9px 0;grid-template-columns:34px minmax(0,1fr) auto;border-top:1px solid var(--line)}
+  .src-share{display:block;grid-column:2/-1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+  .src-share i{display:block;height:100%;width:var(--p);background:var(--c);border-radius:3px}
+  .kpis.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpis.four .kpi:nth-child(3){border-left:0}
+  .kpis.four .kpi:nth-child(n+3){border-top:1px solid var(--line)}
+  .sim{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+  .rail{display:none}
+  .logo-sm{display:flex;padding:0}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:600;color:var(--muted)}
+  .tabbar a.on{color:var(--brand);background:var(--surface-2)}
+  .topbar{padding:12px 16px}
+  .topbar h1{font-size:20px}
+  #view{padding:16px 16px 28px;gap:14px}
+  .card{padding:16px}
+  .bignum{font-size:34px;white-space:normal}
+  .card.kpis,.card.kpis.four{grid-template-columns:minmax(0,1fr)}
+  .kpi,.kpis.four .kpi{border-left:0;border-top:1px solid var(--line);padding:12px 16px}
+  .kpi:first-child,.kpis.four .kpi:first-child{border-top:0}
+  .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toolbar .full{grid-column:1/-1}
+  .tx{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px}
+  .tx .when{order:3}
+  .tx .acts{order:4;width:auto}
+  .txs.compact .tx{grid-template-columns:minmax(0,1fr) auto}
+  .form-grid{grid-template-columns:minmax(0,1fr)}
+  .rem-form{grid-template-columns:minmax(0,1fr) auto}
+  .rem-form input[type=text]{grid-column:1/-1}
+  .sim-nums{grid-template-columns:minmax(0,1fr)}
+  .btn .lbl-long{display:none}
+  .rows > li{flex-wrap:wrap}
+  .rows .grow{flex:1 1 55%}
+  .rows .acts{flex-basis:100%;justify-content:flex-end}
+  .rows .rem .acts,.rem .acts{flex-basis:auto}
+}
+
+</style>
+</head>
+<body class="locked">
+<section class="auth" id="auth" aria-label="Acceso a Wroot">
+  <div class="auth-brand">
+    <div class="logo">
+      <svg width="44" height="44" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 3v9"/><path d="M15 12c0 8-9 6-10 14"/><path d="M15 12v14"/><path d="M15 12c0 8 9 6 10 14"/></svg>
+      <span>Wroot</span>
+    </div>
+    <p class="auth-tag">Todas tus billeteras, una sola raíz.</p>
+    <p class="auth-sub">Saldos, gastos, metas, pagos e inversiones en un mismo lugar.</p>
+  </div>
+  <div class="auth-panel">
+    <form class="auth-form" id="auth-form" novalidate>
+      <h1 id="auth-title">Crea tu cuenta</h1>
+      <p class="muted" id="auth-lead">Regístrate para entrar a la demostración.</p>
+      <label class="field" id="auth-name-field"><span>Nombre</span><input id="auth-name" name="name" type="text" maxlength="40" autocomplete="off"></label>
+      <label class="field"><span>Correo electrónico</span><input id="auth-email" name="email" type="email" maxlength="80" autocomplete="off" placeholder="nombre@correo.com"></label>
+      <label class="field"><span>Contraseña</span><input id="auth-pass" name="pass" type="password" maxlength="60" autocomplete="off"><small>Mínimo 6 caracteres.</small></label>
+      <p class="err" id="auth-err" role="alert"></p>
+      <button class="btn primary auth-submit" type="submit" id="auth-submit">Crear cuenta y entrar</button>
+      <p class="auth-switch"><span id="auth-switch-text">¿Ya tienes cuenta?</span> <button type="button" id="auth-switch" data-action="auth-switch">Inicia sesión</button></p>
+      <p class="note">Registro simulado: los datos no se guardan ni se envían. Al cerrar o recargar la página, Wroot vuelve a esta pantalla.</p>
+    </form>
+  </div>
+</section>
+
+<div class="app">
+  <aside class="rail">
+    <a class="logo" href="#resumen" aria-label="Wroot, ir al resumen">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <path d="M15 3v9"/><path d="M15 12c0 8-9 6-10 14"/><path d="M15 12v14"/><path d="M15 12c0 8 9 6 10 14"/>
+      </svg>
+      <span>Wroot</span>
+    </a>
+    <nav class="rail-nav" id="rail-nav" aria-label="Secciones"></nav>
+    <div class="rail-foot">
+      <p class="eyebrow">Patrimonio total</p>
+      <p class="rail-net num" id="rail-net"></p>
+      <p class="rail-user"><b id="rail-user"></b><span id="rail-mail"></span></p>
+      <p class="demo-note">Prototipo con datos de ejemplo. Nada se guarda al cerrar la página.</p>
+      <button class="rail-btn" type="button" data-action="reset" id="btn-reset">Restablecer datos de ejemplo</button>
+      <button class="rail-btn" type="button" data-action="logout" id="btn-logout">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <div class="main" id="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <a class="logo logo-sm" href="#resumen" aria-label="Wroot, ir al resumen">
+          <svg width="24" height="24" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+            <path d="M15 3v9"/><path d="M15 12c0 8-9 6-10 14"/><path d="M15 12v14"/><path d="M15 12c0 8 9 6 10 14"/>
+          </svg>
+        </a>
+        <div>
+          <h1 id="title">Resumen</h1>
+          <p class="muted" id="today"></p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" type="button" data-action="logout" id="btn-logout-top" aria-label="Cerrar sesión"></button>
+        <button class="icon-btn" type="button" data-action="alerts" id="btn-alerts" aria-label="Ver alertas y recordatorios"></button>
+        <button class="btn primary" type="button" data-action="new-tx" id="btn-new-tx" aria-label="Registrar movimiento"></button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+
+  <nav class="tabbar" id="tabbar" aria-label="Secciones"></nav>
+</div>
+
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+// ============ Wroot · núcleo: utilidades, datos de ejemplo y cálculos ============
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const sum = a => a.reduce((x, y) => x + y, 0);
+const f1 = n => +n.toFixed(1);
+
+// ---------- dinero
+const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+const fmt = n => COP.format(Math.round(n || 0));
+const fmtSigned = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
+function fmtShort(n) {
+  const a = Math.abs(n), t = x => String(+x.toFixed(2)).replace('.', ',');
+  if (a >= 1e12) return '$' + t(n / 1e12) + ' B';
+  if (a >= 1e9) return '$' + t(n / 1e9) + ' mil M';
+  if (a >= 1e6) return '$' + t(n / 1e6) + ' M';
+  if (a >= 1e3) return '$' + t(n / 1e3) + ' k';
+  return '$' + Math.round(n);
+}
+const pct = (x, d = 0) => (x * 100).toFixed(d).replace('.', ',') + '%';
+const toNum = v => Math.round(Number(String(v ?? '').replace(',', '.')) || 0);
+const toDec = v => Number(String(v ?? '').replace(',', '.')) || 0;
+
+// ---------- fechas (cadenas AAAA-MM-DD en hora local)
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const todayISO = () => iso(new Date());
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
+const addMonths = (s, n) => {
+  const d = parse(s), day = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth() + n);
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, last));
+  return iso(d);
+};
+const okDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(parse(s));
+const diffDays = (a, b) => Math.round((parse(a) - parse(b)) / 864e5);
+const DF = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short' });
+const DFY = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+const MF = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric' });
+const MS = new Intl.DateTimeFormat('es-CO', { month: 'short' });
+const LONG = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtDate = s => (s.slice(0, 4) === todayISO().slice(0, 4) ? DF : DFY).format(parse(s)).replace(/\./g, '');
+const monthName = k => MF.format(parse(k + '-01'));
+const monthShort = k => MS.format(parse(k + '-01')).replace('.', '');
+function lastMonths(n) {
+  const t = new Date(), out = [];
+  for (let i = n - 1; i >= 0; i--) { const d = new Date(t.getFullYear(), t.getMonth() - i, 1); out.push(iso(d).slice(0, 7)); }
+  return out;
+}
+function dueInfo(date) {
+  const n = diffDays(date, todayISO());
+  if (n < 0) return { cls: 'crit', text: n === -1 ? 'Venció ayer' : `Venció hace ${-n} días`, n };
+  if (n === 0) return { cls: 'warn', text: 'Vence hoy', n };
+  if (n === 1) return { cls: 'warn', text: 'Vence mañana', n };
+  return { cls: n <= 7 ? 'warn' : 'ok', text: `En ${n} días`, n };
+}
+
+function whenInfo(date) {
+  const n = diffDays(date, todayISO());
+  if (n < 0) return { cls: 'crit', text: n === -1 ? 'Atrasado 1 día' : `Atrasado ${-n} días`, n };
+  if (n === 0) return { cls: 'warn', text: 'Hoy', n };
+  if (n === 1) return { cls: 'warn', text: 'Mañana', n };
+  return { cls: n <= 7 ? 'warn' : 'ok', text: `En ${n} días`, n };
+}
+
+// ---------- catálogos
+const CATS = {
+  gasto: ['Vivienda', 'Mercado', 'Transporte', 'Restaurantes', 'Servicios', 'Suscripciones', 'Salud', 'Ocio', 'Educación', 'Compras', 'Otros gastos'],
+  ingreso: ['Salario', 'Freelance', 'Rendimientos', 'Reembolsos', 'Otros ingresos'],
+};
+const FREQS = { semanal: 'Semanal', mensual: 'Mensual', anual: 'Anual' };
+const REC_KINDS = ['Suscripción', 'Servicio', 'Vivienda', 'Crédito', 'Otro'];
+// Supuestos del simulador: volatilidad y tendencia diarias, y tasa anual de ejemplo. No son datos de mercado.
+const CLASSES = {
+  'Renta fija': { vol: 0.0002, drift: 0.00026, rate: 9, color: 'var(--k1)' },
+  'Fondo de inversión': { vol: 0.002, drift: 0.0003, rate: 8, color: 'var(--k3)' },
+  'ETF': { vol: 0.009, drift: 0.0004, rate: 10, color: 'var(--k2)' },
+  'Acciones': { vol: 0.014, drift: 0.0004, rate: 12, color: 'var(--k4)' },
+  'Cripto': { vol: 0.035, drift: 0.0006, rate: 15, color: 'var(--k5)' },
+};
+const WALLET_PRESETS = {
+  'Nequi': { kind: 'Billetera digital', color: '#DA0081' },
+  'Nu': { kind: 'Cuenta digital', color: '#820AD1' },
+  'Daviplata': { kind: 'Billetera digital', color: '#E1251B' },
+  'Dale!': { kind: 'Billetera digital', color: '#1E9AD6' },
+  'Movii': { kind: 'Billetera digital', color: '#E6007E' },
+  'Cuenta bancaria': { kind: 'Cuenta de ahorros', color: '#3A6EA5' },
+  'Otra': { kind: 'Otra', color: '#6B7A72' },
+};
+
+// ---------- datos de ejemplo
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const gauss = rnd => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+function backHistory(price, cls, n, rnd) {
+  const { vol, drift } = CLASSES[cls]; const h = [price]; let p = price;
+  for (let i = 1; i < n; i++) { p = p / (1 + drift + vol * gauss(rnd)); h.unshift(p); }
+  return h;
+}
+
+function seed() {
+  const rnd = mulberry32(2026);
+  const T = todayISO(), now = parse(T);
+  const r100 = (a, b) => Math.round((a + rnd() * (b - a)) / 100) * 100;
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+  const tx = []; let n = 0;
+  const add = (date, type, amount, cat, wallet, desc) => { if (date <= T) tx.push({ id: 's' + (n++), date, type, amount, cat, wallet, desc }); };
+
+  for (let m = 5; m >= 0; m--) {
+    const y = now.getFullYear(), mo = now.getMonth() - m;
+    const last = new Date(y, mo + 1, 0).getDate();
+    const d = day => iso(new Date(y, mo, Math.min(day, last)));
+    add(d(1), 'ingreso', 3400000, 'Salario', 'w-nu', 'Pago de nómina');
+    add(d(3), 'gasto', 1100000, 'Vivienda', 'w-nu', 'Arriendo');
+    add(d(6), 'gasto', r100(120000, 175000), 'Servicios', 'w-davi', 'Energía y agua');
+    add(d(8), 'gasto', 89900, 'Servicios', 'w-nequi', 'Internet hogar');
+    if (m > 0) add(d(9), 'gasto', 45900, 'Servicios', 'w-nequi', 'Plan celular');
+    add(d(12), 'gasto', 26900, 'Suscripciones', 'w-nu', 'Netflix');
+    add(d(15), 'gasto', 17900, 'Suscripciones', 'w-nequi', 'Spotify');
+    add(d(18), 'gasto', 95000, 'Salud', 'w-nu', 'Gimnasio');
+    [4, 11, 19, 26].forEach(dd => add(d(dd), 'gasto', r100(140000, 235000), 'Mercado', pick(['w-nequi', 'w-davi']), 'Mercado de la semana'));
+    [2, 7, 10, 14, 17, 22, 25, 28].forEach(dd => add(d(dd), 'gasto', r100(6000, 32000), 'Transporte', pick(['w-nequi', 'w-davi', 'w-cash']), pick(['Recarga de transporte', 'Viaje en app', 'Taxi'])));
+    [5, 9, 13, 16, 21, 24, 27].forEach(dd => {
+      const amount = r100(18000, 78000), wallet = pick(['w-nequi', 'w-nu', 'w-cash']), desc = pick(['Almuerzo', 'Café con amigos', 'Domicilio', 'Cena']);
+      if (rnd() < 0.8) add(d(dd), 'gasto', amount, 'Restaurantes', wallet, desc);
+    });
+    const ocio = r100(45000, 160000), ocioD = pick(['Cine y plan de fin de semana', 'Concierto', 'Salida de sábado']);
+    if (rnd() < 0.7) add(d(20), 'gasto', ocio, 'Ocio', 'w-nu', ocioD);
+    const comp = r100(60000, 240000), compD = pick(['Ropa', 'Regalo de cumpleaños', 'Artículos para la casa']);
+    if (rnd() < 0.5) add(d(23), 'gasto', comp, 'Compras', 'w-nu', compD);
+    const farm = r100(30000, 90000);
+    if (rnd() < 0.35) add(d(14), 'gasto', farm, 'Salud', 'w-davi', 'Farmacia');
+    const free = r100(350000, 900000);
+    if (rnd() < 0.65) add(d(19), 'ingreso', free, 'Freelance', 'w-nequi', 'Proyecto independiente');
+    add(d(28), 'ingreso', r100(9000, 16000), 'Rendimientos', 'w-nu', 'Rendimientos de la cuenta');
+  }
+
+  const target = { 'w-nequi': 1284500, 'w-nu': 3412800, 'w-davi': 356200, 'w-cash': 180000 };
+  const wallets = [
+    { id: 'w-nequi', name: 'Nequi', ...WALLET_PRESETS['Nequi'] },
+    { id: 'w-nu', name: 'Nu', ...WALLET_PRESETS['Nu'] },
+    { id: 'w-davi', name: 'Daviplata', ...WALLET_PRESETS['Daviplata'] },
+    { id: 'w-cash', name: 'Efectivo', kind: 'Registro manual', color: '#6B7A72' },
+  ].map(w => {
+    const net = sum(tx.filter(t => t.wallet === w.id).map(t => (t.type === 'ingreso' ? 1 : -1) * t.amount));
+    return { ...w, initial: target[w.id] - net };
+  });
+
+  const goals = [
+    { id: 'g1', name: 'Fondo de emergencia', target: 6000000, saved: 3450000, deadline: addMonths(T, 8) },
+    { id: 'g2', name: 'Viaje a San Andrés', target: 2800000, saved: 1120000, deadline: addMonths(T, 5) },
+    { id: 'g3', name: 'Portátil nuevo', target: 4200000, saved: 900000, deadline: addMonths(T, 10) },
+  ];
+
+  const recurring = [
+    { id: 'r1', name: 'Plan celular', amount: 45900, freq: 'mensual', next: addDays(T, -2), wallet: 'w-nequi', cat: 'Servicios', kind: 'Servicio' },
+    { id: 'r2', name: 'Netflix', amount: 26900, freq: 'mensual', next: addDays(T, 2), wallet: 'w-nu', cat: 'Suscripciones', kind: 'Suscripción' },
+    { id: 'r3', name: 'Spotify', amount: 17900, freq: 'mensual', next: addDays(T, 5), wallet: 'w-nequi', cat: 'Suscripciones', kind: 'Suscripción' },
+    { id: 'r4', name: 'Gimnasio', amount: 95000, freq: 'mensual', next: addDays(T, 8), wallet: 'w-nu', cat: 'Salud', kind: 'Suscripción' },
+    { id: 'r5', name: 'Internet hogar', amount: 89900, freq: 'mensual', next: addDays(T, 14), wallet: 'w-nequi', cat: 'Servicios', kind: 'Servicio' },
+    { id: 'r6', name: 'Arriendo', amount: 1100000, freq: 'mensual', next: addDays(T, 23), wallet: 'w-nu', cat: 'Vivienda', kind: 'Vivienda' },
+    { id: 'r7', name: 'Dominio web personal', amount: 68000, freq: 'anual', next: addDays(T, 41), wallet: 'w-nu', cat: 'Suscripciones', kind: 'Suscripción' },
+  ];
+
+  const reminders = [
+    { id: 'm1', title: 'Abonar a la meta del viaje', date: addDays(T, 4), done: false },
+    { id: 'm2', title: 'Revisar el extracto de Nu', date: addDays(T, 6), done: false },
+    { id: 'm3', title: 'Renovar el SOAT', date: addDays(T, 19), done: false },
+  ];
+
+  const H = [
+    ['CDT a 180 días', 'Renta fija', 1, 2000000, 2061000],
+    ['Fondo de inversión colectiva', 'Fondo de inversión', 1250.5, 1580, 1642],
+    ['ETF índice global', 'ETF', 14, 152000, 168400],
+    ['Acciones locales', 'Acciones', 320, 2450, 2310],
+    ['Cripto (BTC)', 'Cripto', 0.0031, 262000000, 291000000],
+  ];
+  const holdings = H.map(([name, cls, units, cost, price], i) => ({ id: 'h' + i, name, cls, units, cost, price, hist: backHistory(price, cls, 60, rnd) }));
+
+  return { v: 1, wallets, tx, goals, recurring, reminders, holdings };
+}
+
+// ---------- estado: vive solo en memoria. Nada se guarda; al cerrar o recargar la página se pierde.
+let state = null;    // datos financieros de la sesión
+let session = null;  // { name, email } de quien entró; la contraseña nunca se conserva
+
+// ---------- cálculos
+const txSign = t => t.type === 'ingreso' ? 1 : t.type === 'gasto' ? -1 : (t.dir === 'in' ? 1 : -1);
+function balances() {
+  const b = {}; state.wallets.forEach(w => b[w.id] = w.initial);
+  state.tx.forEach(t => { if (t.wallet in b) b[t.wallet] += txSign(t) * t.amount; });
+  return b;
+}
+const walletById = id => state.wallets.find(w => w.id === id);
+const walletsTotal = () => sum(Object.values(balances()));
+const goalsTotal = () => sum(state.goals.map(g => g.saved));
+const holdValue = h => h.units * h.price;
+const portValue = () => sum(state.holdings.map(holdValue));
+const portCost = () => sum(state.holdings.map(h => h.units * h.cost));
+const netWorth = () => walletsTotal() + goalsTotal() + portValue();
+function monthStats(k) {
+  let inc = 0, exp = 0;
+  state.tx.forEach(t => { if (t.date.slice(0, 7) === k) { if (t.type === 'ingreso') inc += t.amount; else if (t.type === 'gasto') exp += t.amount; } });
+  return { inc, exp };
+}
+const sortedTx = () => state.tx.map((t, i) => [t, i]).sort((a, b) => a[0].date < b[0].date ? 1 : a[0].date > b[0].date ? -1 : b[1] - a[1]).map(x => x[0]);
+const monthlyEq = r => r.freq === 'mensual' ? r.amount : r.freq === 'anual' ? r.amount / 12 : r.amount * 52 / 12;
+// Siguiente fecha de un pago. `anchor` es el día del mes pactado: un pago del 31 vuelve al 31 después de pasar por febrero.
+function advance(date, freq, anchor) {
+  if (freq === 'semanal') return addDays(date, 7);
+  const d = parse(date), first = new Date(d.getFullYear(), d.getMonth() + (freq === 'anual' ? 12 : 1), 1);
+  const last = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  first.setDate(Math.min(anchor || d.getDate(), last));
+  return iso(first);
+}
+// Cuántas veces cae un pago entre hoy y los próximos `days` días (los vencidos cuentan una vez).
+function occurrences(r, days) {
+  const T = todayISO(); let d = r.next, n = 0;
+  while (diffDays(d, T) <= days && n < 60) { n++; d = advance(d, r.freq, r.day); }
+  return n;
+}
+const sortedRec = () => [...state.recurring].sort((a, b) => a.next < b.next ? -1 : a.next > b.next ? 1 : 0);
+// Alertas: pagos que vencen en 7 días o menos (o ya vencidos) y recordatorios pendientes en la misma ventana.
+function alerts() {
+  const T = todayISO(), out = [];
+  sortedRec().forEach(r => { if (diffDays(r.next, T) <= 7) out.push({ auto: true, id: r.id, title: 'Pagar ' + r.name, date: r.next, amount: r.amount }); });
+  state.reminders.forEach(m => { if (!m.done && diffDays(m.date, T) <= 7) out.push({ auto: false, id: m.id, title: m.title, date: m.date }); });
+  return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+}
+function sources() {
+  const b = balances();
+  const rows = state.wallets.map(w => ({ name: w.name, kind: w.kind, color: w.color, amount: b[w.id], initial: w.name.trim().charAt(0).toUpperCase() }));
+  rows.push({ name: 'Metas', kind: 'Dinero apartado', color: 'var(--k2)', amount: goalsTotal(), initial: 'M' });
+  rows.push({ name: 'Portafolio', kind: 'Inversiones', color: 'var(--k3)', amount: portValue(), initial: 'P' });
+  return rows;
+}
+function project(p0, monthly, ea, years) {
+  const r = Math.pow(1 + ea / 100, 1 / 12) - 1; let v = p0; const pts = [v];
+  for (let i = 1; i <= years * 12; i++) { v = v * (1 + r) + monthly; pts.push(v); }
+  return pts;
+}
+function stepMarket() {
+  state.holdings.forEach(h => {
+    const c = CLASSES[h.cls] || CLASSES['Acciones'];
+    const z = gauss(Math.random);
+    h.price = Math.max(h.price * (1 + c.drift + c.vol * z), 0.01);
+    h.hist.push(h.price); if (h.hist.length > 120) h.hist.shift();
+  });
+}
+function portHistory() {
+  const n = Math.max(0, ...state.holdings.map(h => h.hist.length)); const pts = [];
+  for (let k = 0; k < n; k++) pts.push(sum(state.holdings.map(h => { const i = k - (n - h.hist.length); return h.units * (i >= 0 ? h.hist[i] : h.hist[0]); })));
+  return pts;
+}
+
+// ============ Wroot · vistas y gráficos ============
+const I = {
+  home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/>',
+  flow: '<path d="M7 4v14m0 0-3.5-3.5M7 18l3.5-3.5"/><path d="M17 20V6m0 0-3.5 3.5M17 6l3.5 3.5"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  chart: '<path d="M4 19.5h16"/><path d="M5 15.5 10 10l3.5 3L19 6.5"/><path d="M15 6.5h4v4"/>',
+  bell: '<path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  edit: '<path d="m5 19 .8-3.8L16.5 4.5l3 3L8.8 18.2z"/>',
+  trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7"/>',
+  swap: '<path d="M4 8h14m0 0-3.5-3.5M18 8l-3.5 3.5"/><path d="M20 16H6m0 0 3.5-3.5M6 16l3.5 3.5"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M5 15.5V6a1.5 1.5 0 0 1 1.5-1.5H15"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5z"/>',
+  out: '<path d="M14 4.5H6.5v15H14"/><path d="M10.5 12H20m0 0-3.5-3.5M20 12l-3.5 3.5"/>',
+};
+const icon = (n, s = 18) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+
+const freshUi = () => ({
+  route: 'resumen',
+  filters: { month: todayISO().slice(0, 7), type: '', cat: '', wallet: '', q: '' },
+  txLimit: 40,
+  sim: { cls: 'Renta fija', p0: 1000000, monthly: 200000, rate: 9, years: 10 },
+});
+let ui = freshUi();
+
+// ---------- gráficos SVG
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+function ticks(lo, hi, n = 4) {
+  if (!(hi > lo)) hi = lo + 1;
+  const st = niceStep((hi - lo) / n), a = Math.floor(lo / st) * st, b = Math.ceil(hi / st) * st, out = [];
+  for (let v = a; v <= b + st / 2; v += st) out.push(v);
+  return out;
+}
+
+const axisMargin = tk => Math.max(60, Math.max(...tk.map(v => fmtShort(v).length)) * 6.4 + 16);
+
+function chartFlow(w) {
+  const data = lastMonths(6).map(k => ({ k, ...monthStats(k) }));
+  const h = 230, m = { l: 60, r: 6, t: 12, b: 26 }, iw = w - m.l - m.r, ih = h - m.t - m.b;
+  const tk = ticks(0, Math.max(1, ...data.map(d => Math.max(d.inc, d.exp)))), top = tk[tk.length - 1];
+  m.l = axisMargin(tk); const iw2 = w - m.l - m.r;
+  const y = v => m.t + ih - (v / top) * ih, gw = iw2 / data.length, bw = Math.max(6, Math.min(26, gw * 0.28));
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Ingresos y gastos de los últimos seis meses">`;
+  tk.forEach(v => { s += `<line class="grid" x1="${m.l}" x2="${w - m.r}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="axis" x="${m.l - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${fmtShort(v)}</text>`; });
+  data.forEach((d, i) => {
+    const cx = m.l + gw * i + gw / 2, base = m.t + ih;
+    s += `<rect class="bar-inc" x="${f1(cx - bw - 2)}" y="${f1(y(d.inc))}" width="${f1(bw)}" height="${f1(base - y(d.inc))}" rx="3"><title>Ingresos de ${monthName(d.k)}: ${fmt(d.inc)}</title></rect>`;
+    s += `<rect class="bar-exp" x="${f1(cx + 2)}" y="${f1(y(d.exp))}" width="${f1(bw)}" height="${f1(base - y(d.exp))}" rx="3"><title>Gastos de ${monthName(d.k)}: ${fmt(d.exp)}</title></rect>`;
+    s += `<text class="axis${i === data.length - 1 ? ' now' : ''}" x="${f1(cx)}" y="${h - 7}" text-anchor="middle">${monthShort(d.k)}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function lineChart(w, h, { series, labels, aria }) {
+  const m = { l: 64, r: 12, t: 12, b: 26 }, ih = h - m.t - m.b;
+  const all = series.flatMap(s => s.pts); if (!all.length) return '';
+  const lo = Math.min(...all), hi = Math.max(...all), padv = (hi - lo) * 0.08 || hi * 0.02 || 1;
+  const tk = ticks(Math.max(0, lo - padv), hi + padv, 4), a = tk[0], b = tk[tk.length - 1];
+  m.l = axisMargin(tk); const iw = w - m.l - m.r;
+  const n = Math.max(...series.map(s => s.pts.length));
+  const x = i => m.l + (n > 1 ? i / (n - 1) : 0.5) * iw, y = v => m.t + ih - ((v - a) / (b - a)) * ih;
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(aria)}">`;
+  tk.forEach(v => { s += `<line class="grid" x1="${m.l}" x2="${w - m.r}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="axis" x="${m.l - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${fmtShort(v)}</text>`; });
+  series.forEach(sr => {
+    const d = sr.pts.map((v, i) => `${i ? 'L' : 'M'}${f1(x(i))} ${f1(y(v))}`).join('');
+    if (sr.area) s += `<path class="${sr.cls}-area" d="${d}L${f1(x(sr.pts.length - 1))} ${m.t + ih}L${f1(x(0))} ${m.t + ih}Z"/>`;
+    s += `<path class="ln ${sr.cls}" d="${d}"/>`;
+    if (sr.dot) { const li = sr.pts.length - 1; s += `<circle class="ln-dot" cx="${f1(x(li))}" cy="${f1(y(sr.pts[li]))}" r="4.5"/>`; }
+  });
+  // Se omite la etiqueta que quedaría encima de la anterior o de la última.
+  const lastL = labels[labels.length - 1]; let prevX = -Infinity;
+  labels.forEach(l => {
+    const lx = x(l.i), isLast = l === lastL, gap = 34 + l.text.length * 3.2;
+    if (!isLast && (lx - prevX < gap || x(lastL.i) - lx < gap + lastL.text.length * 3.2)) return;
+    const anchor = l.i === 0 ? 'start' : l.i >= n - 1 ? 'end' : 'middle';
+    s += `<text class="axis" x="${f1(lx)}" y="${h - 7}" text-anchor="${anchor}">${esc(l.text)}</text>`; prevX = lx;
+  });
+  return s + '</svg>';
+}
+
+function chartPort(w) {
+  const pts = portHistory(); if (pts.length < 2) return '<p class="empty">Agrega una inversión para ver su evolución.</p>';
+  const n = pts.length;
+  return lineChart(w, 220, {
+    series: [{ pts, cls: 'ln-main', area: true, dot: true }],
+    labels: [{ i: 0, text: `Hace ${n - 1} días` }, { i: Math.round((n - 1) / 2), text: `Hace ${n - 1 - Math.round((n - 1) / 2)} días` }, { i: n - 1, text: 'Hoy' }],
+    aria: 'Valor del portafolio en los últimos días (simulado)',
+  });
+}
+
+function simData() {
+  const s = ui.sim, years = Math.max(1, Math.min(40, s.years));
+  const base = project(s.p0, s.monthly, s.rate, years);
+  const low = project(s.p0, s.monthly, Math.max(0, s.rate - 3), years);
+  const high = project(s.p0, s.monthly, s.rate + 3, years);
+  const paid = base.map((_, i) => s.p0 + s.monthly * i);
+  return { years, base, low, high, paid };
+}
+function chartSim(w) {
+  const d = simData(), n = d.base.length, step = d.years <= 6 ? 1 : d.years <= 12 ? 2 : d.years <= 24 ? 5 : 10, labels = [];
+  for (let yv = 0; yv <= d.years; yv += step) labels.push({ i: yv * 12, text: yv === 0 ? 'Hoy' : `Año ${yv}` });
+  if (labels[labels.length - 1].i !== n - 1 && (n - 1 - labels[labels.length - 1].i) >= step * 6) labels.push({ i: n - 1, text: `Año ${d.years}` });
+  return lineChart(w, 250, {
+    series: [
+      { pts: d.paid, cls: 'ln-base', area: true },
+      { pts: d.low, cls: 'ln-alt' },
+      { pts: d.high, cls: 'ln-alt' },
+      { pts: d.base, cls: 'ln-main', dot: true },
+    ],
+    labels, aria: 'Proyección del valor de la inversión',
+  });
+}
+
+function chartRoots(w) {
+  const rows = sources(), RH = 52, h = rows.length * RH, tot = sum(rows.map(r => Math.max(0, r.amount))) || 1;
+  const T = Math.min(h * 0.62, 170), tw = 12, x1 = w - tw, c = f1(w * 0.52);
+  let yb = (h - T) / 2, s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">`;
+  rows.forEach((r, i) => {
+    const share = Math.max(0, r.amount) / tot; if (share <= 0) return;
+    const th = Math.max(share * T, 1.5), tl = Math.min(Math.max(th, 3), RH - 18), yc = i * RH + RH / 2;
+    s += `<path class="root" style="fill:${r.color}" d="M0 ${f1(yc - tl / 2)}C${c} ${f1(yc - tl / 2)} ${c} ${f1(yb)} ${x1} ${f1(yb)}L${x1} ${f1(yb + th)}C${c} ${f1(yb + th)} ${c} ${f1(yc + tl / 2)} 0 ${f1(yc + tl / 2)}Z"/>`;
+    yb += th;
+  });
+  s += `<rect class="trunk" x="${x1}" y="${f1((h - T) / 2 - 5)}" width="${tw}" height="${f1(yb - (h - T) / 2 + 10)}" rx="6"/>`;
+  return s + '</svg>';
+}
+const CHARTS = { flow: chartFlow, port: chartPort, sim: chartSim, roots: chartRoots };
+function drawCharts() { $$('[data-chart]').forEach(el => { const w = Math.floor(el.clientWidth); if (w > 40) el.innerHTML = CHARTS[el.dataset.chart](w); }); }
+
+// ---------- piezas compartidas
+function txRow(t, withActs) {
+  const w = walletById(t.wallet), s = txSign(t);
+  const amt = t.type === 'interno' ? `<span class="amt int num">${s > 0 ? '+' : '−'}${fmt(t.amount)}</span>`
+    : `<span class="amt num ${t.type === 'ingreso' ? 'pos' : ''}">${s > 0 ? '+' : '−'}${fmt(t.amount)}</span>`;
+  const acts = !withActs ? '' : t.type === 'interno' ? '<span class="acts"></span>'
+    : `<span class="acts"><button class="icon-btn plain" type="button" data-action="edit-tx" data-id="${t.id}" aria-label="Editar ${esc(t.desc)}">${icon('edit', 16)}</button><button class="icon-btn plain" type="button" data-action="del-tx" data-id="${t.id}" aria-label="Eliminar ${esc(t.desc)}">${icon('trash', 16)}</button></span>`;
+  return `<li class="tx"><span class="when">${fmtDate(t.date)}</span>
+    <span class="what"><b>${esc(t.desc || t.cat)}</b><small><span>${esc(t.type === 'interno' ? 'Movimiento interno' : t.cat)}</span><span class="dot" style="--c:${w ? w.color : 'var(--muted)'}"></span><span>${esc(w ? w.name : 'Billetera eliminada')}</span></small></span>
+    ${amt}${acts}</li>`;
+}
+function recRow(r, full) {
+  const d = dueInfo(r.next), w = walletById(r.wallet);
+  const acts = full ? `<span class="acts"><button class="btn sm" type="button" data-action="pay-rec" data-id="${r.id}">Marcar pagado</button><button class="icon-btn plain" type="button" data-action="edit-rec" data-id="${r.id}" aria-label="Editar ${esc(r.name)}">${icon('edit', 16)}</button><button class="icon-btn plain" type="button" data-action="del-rec" data-id="${r.id}" aria-label="Eliminar ${esc(r.name)}">${icon('trash', 16)}</button></span>` : '';
+  return `<li><span class="grow"><b>${esc(r.name)}</b><small>${full ? `${esc(r.kind)} · ${FREQS[r.freq]} · ${esc(w ? w.name : 'Sin billetera')} · ` : ''}${fmtDate(r.next)}</small></span>
+    <span class="right"><span class="amt num">${fmt(r.amount)}</span><span class="pill ${d.cls}">${d.text}</span></span>${acts}</li>`;
+}
+const goalPct = g => g.target > 0 ? Math.min(1, g.saved / g.target) : 0;
+const footer = () => `<p class="foot"><span>Wroot · prototipo académico con datos de ejemplo. Nada se guarda: al cerrar o recargar la página vuelve a empezar.</span><button type="button" data-action="reset">Restablecer datos</button><button type="button" data-action="logout">Cerrar sesión</button></p>`;
+
+// ---------- Resumen
+function viewResumen() {
+  const rows = sources(), tot = sum(rows.map(r => Math.max(0, r.amount))) || 1;
+  const mk = todayISO().slice(0, 7), ms = monthStats(mk), bal = ms.inc - ms.exp;
+  const recent = sortedTx().slice(0, 7), next = sortedRec().slice(0, 5);
+  const pv = portValue(), pg = pv - portCost();
+  return `
+  <section class="card hero" aria-label="Dinero consolidado">
+    <div class="roots">
+      <ul class="srcs">${rows.map(r => `<li class="src" style="--c:${r.color};--p:${f1(Math.max(0, r.amount) / tot * 100)}%"><span class="chip">${esc(r.initial)}</span><span class="src-name"><b>${esc(r.name)}</b><small>${esc(r.kind)}</small></span><span class="src-amt num">${fmt(r.amount)}</span><span class="src-share"><i></i></span></li>`).join('')}</ul>
+      <div class="flow" data-chart="roots"></div>
+      <div class="total">
+        <p class="eyebrow">Patrimonio total</p>
+        <p class="bignum num">${fmt(netWorth())}</p>
+        <p class="muted">Disponible en billeteras <b class="num">${fmt(walletsTotal())}</b></p>
+        <div class="hero-acts">
+          <button class="btn" type="button" data-action="move">${icon('swap', 16)}Mover dinero</button>
+          <button class="btn" type="button" data-action="add-wallet">${icon('link', 16)}Conectar billetera</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card kpis" aria-label="Mes en curso">
+    <div class="kpi"><span class="eyebrow">Ingresos de ${monthShort(mk)}</span><span class="val num pos">${fmt(ms.inc)}</span><small>Mes en curso</small></div>
+    <div class="kpi"><span class="eyebrow">Gastos de ${monthShort(mk)}</span><span class="val num">${fmt(ms.exp)}</span><small>${ms.inc > 0 ? pct(ms.exp / ms.inc) + ' de tus ingresos' : 'Sin ingresos registrados'}</small></div>
+    <div class="kpi"><span class="eyebrow">Balance del mes</span><span class="val num ${bal < 0 ? 'neg' : ''}">${fmtSigned(bal)}</span><small>${bal >= 0 ? 'Te queda por gastar o ahorrar' : 'Has gastado más de lo que entró'}</small></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-head"><h2>Flujo de los últimos 6 meses</h2><a class="btn ghost sm" href="#movimientos">Ver movimientos</a></div>
+      <div data-chart="flow"></div>
+      <p class="keys"><span><i class="sq"></i>Ingresos</span><span><i class="sq exp"></i>Gastos</span></p>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Próximos pagos</h2><a class="btn ghost sm" href="#metas">Ver todos</a></div>
+      ${next.length ? `<ul class="rows">${next.map(r => recRow(r, false)).join('')}</ul>` : '<p class="empty">No tienes pagos programados.</p>'}
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-head"><h2>Últimos movimientos</h2><a class="btn ghost sm" href="#movimientos">Ver historial</a></div>
+      ${recent.length ? `<ul class="txs compact">${recent.map(t => txRow(t, false)).join('')}</ul>` : '<p class="empty">Aún no hay movimientos.</p>'}
+    </section>
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><h2>Metas</h2><a class="btn ghost sm" href="#metas">Administrar</a></div>
+        ${state.goals.length ? state.goals.map(g => `<div class="mini-goal"><div><b>${esc(g.name)}</b><span class="num muted">${pct(goalPct(g))}</span></div><div class="progress ${goalPct(g) >= 1 ? 'done' : ''}" style="--p:${f1(goalPct(g) * 100)}%"><i></i></div><div><span class="num muted">${fmt(g.saved)} de ${fmt(g.target)}</span></div></div>`).join('') : '<p class="empty">Crea tu primera meta.</p>'}
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>Portafolio</h2><a class="btn ghost sm" href="#portafolio">Ver detalle</a></div>
+        <p class="bignum num" style="font-size:28px;margin:0 0 4px">${fmt(pv)}</p>
+        <p class="note"><span class="${pg >= 0 ? 'pos' : 'neg'} num">${fmtSigned(pg)}</span> frente a lo invertido · precios simulados</p>
+      </section>
+    </div>
+  </div>
+  ${footer()}`;
+}
+
+// ---------- Ingresos y gastos
+const opts = (list, sel) => list.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}"${String(v) === String(sel) ? ' selected' : ''}>${esc(l)}</option>`; }).join('');
+function filteredTx() {
+  const f = ui.filters, q = f.q.trim().toLowerCase();
+  return sortedTx().filter(t =>
+    (!f.month || t.date.slice(0, 7) === f.month) && (!f.type || t.type === f.type) && (!f.cat || t.cat === f.cat) && (!f.wallet || t.wallet === f.wallet)
+    && (!q || (t.desc + ' ' + t.cat).toLowerCase().includes(q)));
+}
+function txResults() {
+  const list = filteredTx(), f = ui.filters;
+  const inc = sum(list.filter(t => t.type === 'ingreso').map(t => t.amount)), exp = sum(list.filter(t => t.type === 'gasto').map(t => t.amount));
+  const kind = f.type === 'ingreso' ? 'ingreso' : 'gasto', byCat = {};
+  list.filter(t => t.type === kind).forEach(t => byCat[t.cat] = (byCat[t.cat] || 0) + t.amount);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), ctot = sum(cats.map(c => c[1])) || 1, cmax = cats.length ? cats[0][1] : 1;
+  const shown = list.slice(0, ui.txLimit);
+  return {
+    summary: `<span>${list.length} ${list.length === 1 ? 'movimiento' : 'movimientos'}</span><span>Ingresos <b class="num pos">${fmt(inc)}</b></span><span>Gastos <b class="num">${fmt(exp)}</b></span><span>Neto <b class="num ${inc - exp < 0 ? 'neg' : ''}">${fmtSigned(inc - exp)}</b></span>`,
+    list: shown.length ? `<ul class="txs">${shown.map(t => txRow(t, true)).join('')}</ul>${list.length > shown.length ? `<p style="text-align:center;padding-top:10px"><button class="btn sm" type="button" data-action="more-tx">Ver ${Math.min(40, list.length - shown.length)} más</button></p>` : ''}` : '<p class="empty">Ningún movimiento coincide con los filtros.</p>',
+    cats: `<div class="card-head"><h2>${kind === 'ingreso' ? 'Ingresos' : 'Gastos'} por categoría</h2></div>${cats.length ? `<ul class="bars">${cats.map(([c, v]) => `<li><span>${esc(c)}</span><span class="num"><b>${fmt(v)}</b> <small>${pct(v / ctot)}</small></span><span class="track" style="--p:${f1(v / cmax * 100)}%"><i></i></span></li>`).join('')}</ul>` : '<p class="empty">Sin datos para este filtro.</p>'}`,
+  };
+}
+function refreshTx() { const r = txResults(); $('#tx-summary').innerHTML = r.summary; $('#tx-list').innerHTML = r.list; $('#tx-cats').innerHTML = r.cats; }
+function viewMovimientos() {
+  const f = ui.filters;
+  const months = [...new Set(state.tx.map(t => t.date.slice(0, 7)))].sort().reverse();
+  const allCats = [...new Set([...CATS.gasto, ...CATS.ingreso, ...state.tx.filter(t => t.type !== 'interno').map(t => t.cat)])];
+  // Un filtro guardado que ya no existe entre las opciones se limpia para no dejar la lista vacía sin explicación.
+  if (f.month && !months.includes(f.month)) f.month = '';
+  if (f.cat && !allCats.includes(f.cat)) f.cat = '';
+  if (f.wallet && !walletById(f.wallet)) f.wallet = '';
+  const r = txResults();
+  return `
+  <section class="toolbar" aria-label="Filtros">
+    <label class="field"><span>Mes</span><select id="flt-month" data-filter="month">${opts([['', 'Todos los meses'], ...months.map(k => [k, monthName(k)])], f.month)}</select></label>
+    <label class="field"><span>Tipo</span><select id="flt-type" data-filter="type">${opts([['', 'Todos'], ['ingreso', 'Ingresos'], ['gasto', 'Gastos'], ['interno', 'Movimientos internos']], f.type)}</select></label>
+    <label class="field"><span>Categoría</span><select id="flt-cat" data-filter="cat">${opts([['', 'Todas'], ...allCats], f.cat)}</select></label>
+    <label class="field"><span>Billetera</span><select id="flt-wallet" data-filter="wallet">${opts([['', 'Todas'], ...state.wallets.map(w => [w.id, w.name])], f.wallet)}</select></label>
+    <label class="field full"><span>Buscar</span><input id="flt-q" type="search" data-filter="q" value="${esc(f.q)}" placeholder="Descripción o categoría"></label>
+  </section>
+  <div class="grid2">
+    <section class="card">
+      <div class="card-head"><h2>Historial</h2><div class="acts"><button class="btn sm" type="button" data-action="copy-csv">${icon('copy', 15)}Copiar como CSV</button><button class="btn sm primary" type="button" data-action="new-tx">${icon('plus', 15)}Registrar</button></div></div>
+      <div class="summary" id="tx-summary">${r.summary}</div>
+      <div id="tx-list">${r.list}</div>
+    </section>
+    <section class="card" id="tx-cats">${r.cats}</section>
+  </div>
+  ${footer()}`;
+}
+
+// ---------- Metas y pagos
+function goalCard(g) {
+  const p = goalPct(g), left = Math.max(0, g.target - g.saved), days = diffDays(g.deadline, todayISO());
+  const months = Math.max(1, Math.ceil(days / 30.44));
+  const tip = p >= 1 ? '<span class="pill ok">Meta cumplida</span>'
+    : days < 0 ? '<span class="pill crit">Fecha límite vencida</span>'
+      : `<span class="note">Aparta <b class="num">${fmt(left / months)}</b> al mes para llegar a tiempo</span>`;
+  return `<article class="card goal">
+    <div class="goal-top"><h3>${esc(g.name)}</h3><span class="pill neutral">${fmtDate(g.deadline)}</span></div>
+    <div class="goal-nums"><span><b class="num">${fmt(g.saved)}</b> <span class="muted num">de ${fmt(g.target)}</span></span><span class="num muted">${pct(p)}</span></div>
+    <div class="progress ${p >= 1 ? 'done' : ''}" style="--p:${f1(p * 100)}%" role="progressbar" aria-valuenow="${Math.round(p * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de ${esc(g.name)}"><i></i></div>
+    <div>${tip}</div>
+    <div class="acts"><button class="btn sm primary" type="button" data-action="fund-goal" data-id="${g.id}">Abonar o retirar</button><span class="sp"></span><button class="icon-btn plain" type="button" data-action="edit-goal" data-id="${g.id}" aria-label="Editar ${esc(g.name)}">${icon('edit', 16)}</button><button class="icon-btn plain" type="button" data-action="del-goal" data-id="${g.id}" aria-label="Eliminar ${esc(g.name)}">${icon('trash', 16)}</button></div>
+  </article>`;
+}
+function viewMetas() {
+  const T = todayISO(), recs = sortedRec();
+  const occ = recs.map(r => occurrences(r, 30)), n30 = sum(occ);
+  const monthly = sum(state.recurring.map(monthlyEq)), in30 = sum(recs.map((r, i) => r.amount * occ[i])), overdue = recs.filter(r => r.next < T).length;
+  const al = alerts().filter(a => a.auto);
+  const rems = [...state.reminders].sort((a, b) => (a.done - b.done) || (a.date < b.date ? -1 : 1));
+  return `
+  <div class="section-title"><h2>Metas financieras</h2><button class="btn primary" type="button" data-action="new-goal">${icon('plus', 16)}Nueva meta</button></div>
+  ${state.goals.length ? `<div class="goals">${state.goals.map(goalCard).join('')}</div>` : '<section class="card"><p class="empty">Todavía no tienes metas. Crea una para empezar a apartar dinero.</p></section>'}
+
+  <div class="section-title"><h2>Pagos recurrentes y suscripciones</h2><button class="btn primary" type="button" data-action="new-rec">${icon('plus', 16)}Nuevo pago</button></div>
+  <section class="card kpis" aria-label="Resumen de pagos">
+    <div class="kpi"><span class="eyebrow">Compromiso mensual</span><span class="val num">${fmt(monthly)}</span><small>Incluye la parte mensual de pagos anuales y semanales</small></div>
+    <div class="kpi"><span class="eyebrow">Próximos 30 días</span><span class="val num">${fmt(in30)}</span><small>${n30} ${n30 === 1 ? 'pago por hacer' : 'pagos por hacer'}, vencidos incluidos</small></div>
+    <div class="kpi"><span class="eyebrow">Vencidos</span><span class="val num ${overdue ? 'neg' : ''}">${overdue}</span><small>${overdue ? 'Márcalos como pagados cuando los cubras' : 'Estás al día'}</small></div>
+  </section>
+  <section class="card">
+    ${recs.length ? `<ul class="rows">${recs.map(r => recRow(r, true)).join('')}</ul>` : '<p class="empty">No tienes pagos recurrentes registrados.</p>'}
+  </section>
+
+  <div class="section-title"><h2>Recordatorios</h2></div>
+  <section class="card">
+    <form class="rem-form" id="rem-form">
+      <input id="rem-title" name="title" type="text" required maxlength="80" placeholder="Qué quieres recordar" aria-label="Recordatorio">
+      <input id="rem-date" name="date" type="date" required max="9999-12-31" value="${addDays(T, 1)}" aria-label="Fecha del recordatorio">
+      <button class="btn primary" type="submit">Agregar</button>
+    </form>
+    <ul class="rows">
+      ${al.map(a => { const d = dueInfo(a.date); return `<li><span class="grow"><b>${esc(a.title)}</b><small>Automático por pago recurrente · ${fmtDate(a.date)} · ${fmt(a.amount)}</small></span><span class="pill ${d.cls}">${d.text}</span></li>`; }).join('')}
+      ${rems.map(m => { const d = whenInfo(m.date); return `<li class="rem ${m.done ? 'done' : ''}"><input type="checkbox" id="rem-${m.id}" data-action="toggle-rem" data-id="${m.id}" ${m.done ? 'checked' : ''} aria-label="Marcar ${esc(m.title)} como hecho"><span class="grow"><b>${esc(m.title)}</b><small>${fmtDate(m.date)}</small></span>${m.done ? '<span class="pill neutral">Hecho</span>' : `<span class="pill ${d.cls}">${d.text}</span>`}<span class="acts"><button class="icon-btn plain" type="button" data-action="del-rem" data-id="${m.id}" aria-label="Eliminar ${esc(m.title)}">${icon('trash', 16)}</button></span></li>`; }).join('')}
+    </ul>
+    ${!al.length && !rems.length ? '<p class="empty">Sin recordatorios pendientes.</p>' : ''}
+  </section>
+  ${footer()}`;
+}
+
+// ---------- Portafolio
+const fmtUnits = u => Number.isInteger(u) ? String(u) : u.toLocaleString('es-CO', { maximumFractionDigits: 4 });
+function simOut() {
+  const d = simData(), fin = d.base[d.base.length - 1], paid = d.paid[d.paid.length - 1];
+  return `<div class="sim-nums">
+      <div><small>Valor estimado en ${d.years} ${d.years === 1 ? 'año' : 'años'}</small><b class="num">${fmt(fin)}</b></div>
+      <div><small>Total aportado</small><b class="num">${fmt(paid)}</b></div>
+      <div><small>Rendimientos</small><b class="num pos">${fmtSigned(fin - paid)}</b></div>
+    </div>
+    <div data-chart="sim"></div>
+    <p class="keys"><span><i></i>Escenario base (${String(ui.sim.rate).replace('.', ',')}% E.A.)</span><span><i class="dash"></i>3 puntos por debajo y por encima: ${fmt(d.low[d.low.length - 1])} a ${fmt(d.high[d.high.length - 1])}</span><span><i class="fill"></i>Dinero aportado</span></p>`;
+}
+function viewPortafolio() {
+  const pv = portValue(), pc = portCost(), pg = pv - pc, byCls = {};
+  state.holdings.forEach(h => byCls[h.cls] = (byCls[h.cls] || 0) + holdValue(h));
+  const cls = Object.entries(byCls).sort((a, b) => b[1] - a[1]), s = ui.sim;
+  const hist = portHistory(), d0 = hist.length > 1 ? pv - hist[0] : 0;
+  return `
+  <section class="card kpis four" aria-label="Resumen del portafolio">
+    <div class="kpi"><span class="eyebrow">Valor actual</span><span class="val num">${fmt(pv)}</span><small><span class="pill neutral">Precios simulados</span></small></div>
+    <div class="kpi"><span class="eyebrow">Invertido</span><span class="val num">${fmt(pc)}</span><small>Costo de compra</small></div>
+    <div class="kpi"><span class="eyebrow">Ganancia o pérdida</span><span class="val num ${pg >= 0 ? 'pos' : 'neg'}">${fmtSigned(pg)}</span><small>${pc > 0 ? (pg >= 0 ? '+' : '−') + pct(Math.abs(pg) / pc, 1) + ' sobre lo invertido' : 'Sin posiciones'}</small></div>
+    <div class="kpi"><span class="eyebrow">Últimos ${Math.max(0, hist.length - 1)} días</span><span class="val num ${d0 >= 0 ? 'pos' : 'neg'}">${fmtSigned(d0)}</span><small>Cambio de valor del periodo</small></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-head"><h2>Evolución del portafolio</h2><div class="acts"><button class="btn sm" type="button" data-action="sim-day" data-n="1">${icon('play', 14)}Simular 1 día</button><button class="btn sm" type="button" data-action="sim-day" data-n="30">Simular 30 días</button></div></div>
+      <div data-chart="port"></div>
+      <p class="note" style="margin-top:6px">Valor de tus posiciones actuales. Los precios se generan al azar según el riesgo de cada tipo de activo; no son datos de mercado.</p>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Distribución</h2></div>
+      ${cls.length ? `<div class="alloc" role="img" aria-label="Distribución por tipo de activo">${cls.map(([c, v]) => `<i style="--c:${CLASSES[c] ? CLASSES[c].color : 'var(--muted)'};width:${f1(v / pv * 100)}%"></i>`).join('')}</div>
+      <ul class="legend">${cls.map(([c, v]) => `<li><span class="dot" style="--c:${CLASSES[c] ? CLASSES[c].color : 'var(--muted)'}"></span><span>${esc(c)}</span><span class="num muted">${fmt(v)}</span><b class="num">${pct(v / pv)}</b></li>`).join('')}</ul>` : '<p class="empty">Sin posiciones.</p>'}
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-head"><h2>Posiciones</h2><button class="btn sm primary" type="button" data-action="new-hold">${icon('plus', 15)}Agregar inversión</button></div>
+    ${state.holdings.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Activo</th><th>Unidades</th><th>Precio de compra</th><th>Precio actual</th><th>Valor</th><th>Ganancia o pérdida</th><th><span class="muted">Acción</span></th></tr></thead>
+      <tbody>${state.holdings.map(h => { const v = holdValue(h), g = v - h.units * h.cost; return `<tr><td><b>${esc(h.name)}</b><small>${esc(h.cls)}</small></td><td class="num">${fmtUnits(h.units)}</td><td class="num">${fmt(h.cost)}</td><td class="num">${fmt(h.price)}</td><td class="num"><b>${fmt(v)}</b></td><td class="num ${g >= 0 ? 'pos' : 'neg'}">${fmtSigned(g)}<small>${h.cost > 0 ? (g >= 0 ? '+' : '−') + pct(Math.abs(g) / (h.units * h.cost), 1) : ''}</small></td><td><button class="btn sm" type="button" data-action="sell-hold" data-id="${h.id}">Vender</button></td></tr>`; }).join('')}</tbody>
+    </table></div>` : '<p class="empty">Aún no tienes inversiones registradas.</p>'}
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Simulador de inversión</h2></div>
+    <div class="sim">
+      <form class="sim-form" id="sim-form">
+        <label class="field"><span>Tipo de activo</span><select id="sim-cls" name="cls">${opts(Object.keys(CLASSES), s.cls)}</select><small>Cambia la tasa a un valor de ejemplo para ese tipo.</small></label>
+        <label class="field"><span>Monto inicial (COP)</span><input id="sim-p0" name="p0" type="number" min="0" step="50000" value="${s.p0}" inputmode="numeric"></label>
+        <label class="field"><span>Aporte mensual (COP)</span><input id="sim-monthly" name="monthly" type="number" min="0" step="10000" value="${s.monthly}" inputmode="numeric"></label>
+        <label class="field"><span>Rentabilidad esperada (% efectivo anual)</span><input id="sim-rate" name="rate" type="number" min="0" max="60" step="0.5" value="${s.rate}" inputmode="decimal"></label>
+        <label class="field"><span>Plazo: <output id="sim-years-out">${s.years}</output> años</span><input id="sim-years" name="years" type="range" min="1" max="30" step="1" value="${s.years}" aria-label="Plazo en años"></label>
+      </form>
+      <div id="sim-out">${simOut()}</div>
+    </div>
+    <p class="note" style="margin-top:12px">Proyección con interés compuesto y aportes al final de cada mes. Las tasas son supuestos que puedes cambiar; no es una recomendación ni una promesa de rentabilidad.</p>
+  </section>
+  ${footer()}`;
+}
+
+const ROUTES = {
+  resumen: { title: 'Resumen', icon: 'home', render: viewResumen },
+  movimientos: { title: 'Ingresos y gastos', short: 'Movimientos', icon: 'flow', render: viewMovimientos },
+  metas: { title: 'Metas y pagos', short: 'Metas', icon: 'target', render: viewMetas },
+  portafolio: { title: 'Portafolio', icon: 'chart', render: viewPortafolio },
+};
+
+// ============ Wroot · render, formularios y acciones ============
+function renderChrome() {
+  const nav = Object.entries(ROUTES).map(([k, r]) => `<a href="#${k}" data-nav="${k}" class="${k === ui.route ? 'on' : ''}"${k === ui.route ? ' aria-current="page"' : ''}>${icon(r.icon, 20)}<span>${r.title}</span></a>`).join('');
+  $('#rail-nav').innerHTML = nav;
+  $('#tabbar').innerHTML = Object.entries(ROUTES).map(([k, r]) => `<a href="#${k}" data-nav="${k}" class="${k === ui.route ? 'on' : ''}"${k === ui.route ? ' aria-current="page"' : ''}>${icon(r.icon, 22)}<span>${r.short || r.title}</span></a>`).join('');
+  $('#rail-net').textContent = fmt(netWorth());
+  const n = alerts().length;
+  $('#btn-alerts').innerHTML = icon('bell', 19) + (n ? `<span class="badge">${n}</span>` : '');
+  $('#btn-logout-top').innerHTML = icon('out', 19);
+  $('#rail-user').textContent = session.name; $('#rail-mail').textContent = session.email;
+  $('#btn-new-tx').innerHTML = icon('plus', 17) + '<span class="lbl-long">Registrar movimiento</span>';
+  $('#title').textContent = ROUTES[ui.route].title;
+  const t = LONG.format(new Date()); $('#today').textContent = t.charAt(0).toUpperCase() + t.slice(1);
+}
+// El contenido se vuelve a pintar entero; estas dos funciones devuelven el foco del teclado a donde estaba.
+function focusKey(el) {
+  if (!el || el === document.body || el.closest('#modal')) return null;
+  if (el.id) return '#' + CSS.escape(el.id);
+  const d = el.dataset || {};
+  if (d.action) return `[data-action="${d.action}"]` + (d.id ? `[data-id="${CSS.escape(d.id)}"]` : '') + (d.n ? `[data-n="${d.n}"]` : '');
+  if (d.nav) return `[data-nav="${d.nav}"]`;
+  return null;
+}
+function refocus(key) {
+  if (!key) return;
+  const el = $$(key).find(x => x.offsetParent !== null);
+  if (el && el !== document.activeElement) el.focus({ preventScroll: true });
+}
+function render() {
+  const key = focusKey(document.activeElement);
+  $('#view').innerHTML = ROUTES[ui.route].render();
+  renderChrome();
+  drawCharts();
+  refocus(key);
+}
+function route() {
+  if (!session) return;
+  const h = location.hash.slice(1), next = ROUTES[h] ? h : 'resumen';
+  const changed = next !== ui.route; ui.route = next;
+  render();
+  if (changed) $('#main').scrollTop = 0;
+}
+let toastTimer;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+function commit(msg) { render(); if (msg) toast(msg); }
+
+// ---------- modal
+let modalOpener = null;
+function openModal({ title, body, submit = 'Guardar', danger = false, onSubmit, onOpen }) {
+  const d = $('#modal');
+  if (!d.open) modalOpener = focusKey(document.activeElement);
+  d.innerHTML = `<form class="modal-form" id="modal-form" novalidate>
+    <h2 id="modal-title">${esc(title)}</h2>
+    ${body}
+    <p class="err" id="modal-err" role="alert"></p>
+    <div class="modal-acts"><button class="btn" type="button" data-action="close-modal">${onSubmit ? 'Cancelar' : 'Cerrar'}</button>${onSubmit ? `<button class="btn ${danger ? 'danger' : 'primary'}" type="submit">${esc(submit)}</button>` : ''}</div>
+  </form>`;
+  const form = $('#modal-form');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!onSubmit) return closeModal();
+    if (!form.checkValidity()) { $('#modal-err').textContent = 'Revisa los campos marcados: faltan datos o hay valores no válidos.'; form.reportValidity(); return; }
+    const err = onSubmit(Object.fromEntries(new FormData(form)), form);
+    if (err) $('#modal-err').textContent = err; else closeModal();
+  });
+  if (onOpen) onOpen(form);
+  if (!d.open) d.showModal();
+}
+function closeModal() { const d = $('#modal'); if (d.open) d.close(); refocus(modalOpener); }
+function confirmModal(title, text, label, fn) { openModal({ title, body: `<p>${text}</p>`, submit: label, danger: true, onSubmit: () => { fn(); } }); }
+
+const field = (label, control, hint = '', cls = '') => `<label class="field ${cls}"><span>${label}</span>${control}${hint ? `<small>${hint}</small>` : ''}</label>`;
+const walletOpts = sel => { const b = balances(); return opts(state.wallets.map(w => [w.id, `${w.name} · ${fmt(b[w.id])}`]), sel); };
+const money = (name, value = '', extra = '') => `<input id="f-${name}" name="${name}" type="number" min="1" max="999999999999" step="1" required inputmode="numeric" value="${value}" ${extra}>`;
+const dateInput = (name, value) => `<input id="f-${name}" name="${name}" type="date" required max="9999-12-31" value="${value}">`;
+const BAD_DATE = 'Escribe una fecha válida, con un año de cuatro cifras.';
+
+// ---------- formularios
+function txForm(t) {
+  const isNew = !t; t = t || { type: 'gasto', amount: '', cat: '', wallet: state.wallets[0] && state.wallets[0].id, date: todayISO(), desc: '' };
+  openModal({
+    title: isNew ? 'Registrar movimiento' : 'Editar movimiento',
+    body: `<div class="seg" role="radiogroup" aria-label="Tipo de movimiento">
+        <label><input type="radio" id="f-type-gasto" name="type" value="gasto" ${t.type === 'gasto' ? 'checked' : ''}>Gasto</label>
+        <label><input type="radio" id="f-type-ingreso" name="type" value="ingreso" ${t.type === 'ingreso' ? 'checked' : ''}>Ingreso</label>
+      </div>
+      <div class="form-grid">
+        ${field('Monto (COP)', money('amount', t.amount))}
+        ${field('Fecha', dateInput('date', t.date))}
+        ${field('Categoría', `<select id="f-cat" name="cat">${opts(CATS[t.type], t.cat)}</select>`)}
+        ${field('Billetera', `<select id="f-wallet" name="wallet" required>${walletOpts(t.wallet)}</select>`)}
+        ${field('Descripción', `<input id="f-desc" name="desc" type="text" maxlength="60" value="${esc(t.desc)}" placeholder="Ej.: Almuerzo con el equipo">`, '', 'full')}
+      </div>`,
+    onOpen: form => form.addEventListener('change', e => { if (e.target.name === 'type') $('#f-cat', form).innerHTML = opts(CATS[e.target.value], ''); }),
+    onSubmit: d => {
+      const amount = toNum(d.amount); if (amount <= 0) return 'Escribe un monto mayor que cero.';
+      if (!walletById(d.wallet)) return 'Elige una billetera.';
+      if (!okDate(d.date)) return BAD_DATE;
+      const rec = { type: d.type, amount, cat: d.cat, wallet: d.wallet, date: d.date, desc: d.desc.trim() || d.cat };
+      if (isNew) state.tx.push({ id: uid(), ...rec }); else Object.assign(t, rec);
+      commit(isNew ? 'Movimiento registrado' : 'Movimiento actualizado');
+    },
+  });
+}
+function goalForm(g) {
+  const isNew = !g; g = g || { name: '', target: '', deadline: addMonths(todayISO(), 6) };
+  openModal({
+    title: isNew ? 'Nueva meta' : 'Editar meta',
+    body: `<div class="form-grid">
+      ${field('Nombre de la meta', `<input id="f-name" name="name" type="text" required maxlength="40" value="${esc(g.name)}" placeholder="Ej.: Cuota inicial del apartamento">`, '', 'full')}
+      ${field('Monto objetivo (COP)', money('target', g.target))}
+      ${field('Fecha límite', dateInput('deadline', g.deadline))}
+    </div>`,
+    onSubmit: d => {
+      const target = toNum(d.target); if (target <= 0) return 'Escribe un monto objetivo mayor que cero.';
+      if (!d.name.trim()) return 'Ponle un nombre a la meta.';
+      if (!okDate(d.deadline)) return BAD_DATE;
+      if (isNew) state.goals.push({ id: uid(), name: d.name.trim(), target, saved: 0, deadline: d.deadline });
+      else Object.assign(g, { name: d.name.trim(), target, deadline: d.deadline });
+      commit(isNew ? 'Meta creada' : 'Meta actualizada');
+    },
+  });
+}
+function fundForm(g) {
+  openModal({
+    title: g.name,
+    body: `<div class="seg" role="radiogroup" aria-label="Operación">
+        <label><input type="radio" id="f-op-in" name="op" value="in" checked>Abonar</label>
+        <label><input type="radio" id="f-op-out" name="op" value="out">Retirar</label>
+      </div>
+      <p class="note">Apartado: <b class="num">${fmt(g.saved)}</b> de ${fmt(g.target)}. El dinero se mueve entre la billetera y la meta; no cuenta como gasto.</p>
+      <div class="form-grid">
+        ${field('Monto (COP)', money('amount'))}
+        ${field('Billetera', `<select id="f-wallet" name="wallet" required>${walletOpts()}</select>`)}
+      </div>`,
+    submit: 'Confirmar',
+    onSubmit: d => {
+      const amount = toNum(d.amount), w = walletById(d.wallet); if (amount <= 0) return 'Escribe un monto mayor que cero.';
+      if (!w) return 'Elige una billetera.';
+      if (d.op === 'in') {
+        if (amount > balances()[w.id]) return `Saldo insuficiente en ${w.name}.`;
+        g.saved += amount; state.tx.push({ id: uid(), type: 'interno', dir: 'out', amount, cat: 'Metas', wallet: w.id, date: todayISO(), desc: 'Abono a meta: ' + g.name });
+      } else {
+        if (amount > g.saved) return 'No puedes retirar más de lo apartado.';
+        g.saved -= amount; state.tx.push({ id: uid(), type: 'interno', dir: 'in', amount, cat: 'Metas', wallet: w.id, date: todayISO(), desc: 'Retiro de meta: ' + g.name });
+      }
+      commit(d.op === 'in' ? 'Abono registrado' : 'Retiro registrado');
+    },
+  });
+}
+function recForm(r) {
+  const isNew = !r; r = r || { name: '', amount: '', freq: 'mensual', next: addDays(todayISO(), 7), wallet: state.wallets[0] && state.wallets[0].id, cat: 'Suscripciones', kind: 'Suscripción' };
+  openModal({
+    title: isNew ? 'Nuevo pago recurrente' : 'Editar pago recurrente',
+    body: `<div class="form-grid">
+      ${field('Nombre', `<input id="f-name" name="name" type="text" required maxlength="40" value="${esc(r.name)}" placeholder="Ej.: Plan de datos">`, '', 'full')}
+      ${field('Monto (COP)', money('amount', r.amount))}
+      ${field('Frecuencia', `<select id="f-freq" name="freq">${opts(Object.entries(FREQS), r.freq)}</select>`)}
+      ${field('Próximo pago', dateInput('next', r.next))}
+      ${field('Tipo', `<select id="f-kind" name="kind">${opts(REC_KINDS, r.kind)}</select>`)}
+      ${field('Categoría del gasto', `<select id="f-cat" name="cat">${opts(CATS.gasto, r.cat)}</select>`)}
+      ${field('Se paga desde', `<select id="f-wallet" name="wallet" required>${walletOpts(r.wallet)}</select>`)}
+    </div>`,
+    onSubmit: d => {
+      const amount = toNum(d.amount); if (amount <= 0) return 'Escribe un monto mayor que cero.';
+      if (!d.name.trim()) return 'Ponle un nombre al pago.';
+      if (!okDate(d.next)) return BAD_DATE;
+      const rec = { name: d.name.trim(), amount, freq: d.freq, next: d.next, day: parse(d.next).getDate(), wallet: d.wallet, cat: d.cat, kind: d.kind };
+      if (isNew) state.recurring.push({ id: uid(), ...rec }); else Object.assign(r, rec);
+      commit(isNew ? 'Pago recurrente creado' : 'Pago actualizado');
+    },
+  });
+}
+function holdForm() {
+  openModal({
+    title: 'Agregar inversión',
+    body: `<div class="form-grid">
+      ${field('Nombre del activo', `<input id="f-name" name="name" type="text" required maxlength="40" placeholder="Ej.: CDT a 360 días">`, '', 'full')}
+      ${field('Tipo de activo', `<select id="f-cls" name="cls">${opts(Object.keys(CLASSES), 'Renta fija')}</select>`)}
+      ${field('Monto a invertir (COP)', money('amount'))}
+      ${field('Precio por unidad (COP)', `<input id="f-price" name="price" type="number" min="0" step="any" inputmode="decimal" placeholder="Opcional">`, 'Si lo dejas vacío se registra como una sola unidad.')}
+      ${field('Sale de', `<select id="f-wallet" name="wallet">${opts([['', 'No descontar de una billetera']], '')}${walletOpts()}</select>`)}
+    </div>
+    <p class="note">La compra es simulada: sirve para hacer seguimiento, no ejecuta ninguna orden real.</p>`,
+    submit: 'Agregar',
+    onSubmit: d => {
+      const amount = toNum(d.amount), price = toDec(d.price) > 0 ? toDec(d.price) : amount; if (amount <= 0) return 'Escribe un monto mayor que cero.';
+      if (!d.name.trim()) return 'Ponle un nombre al activo.';
+      if (d.wallet) {
+        const w = walletById(d.wallet); if (amount > balances()[w.id]) return `Saldo insuficiente en ${w.name}.`;
+        state.tx.push({ id: uid(), type: 'interno', dir: 'out', amount, cat: 'Inversiones', wallet: w.id, date: todayISO(), desc: 'Inversión: ' + d.name.trim() });
+      }
+      const len = Math.max(2, ...state.holdings.map(h => h.hist.length));
+      state.holdings.push({ id: uid(), name: d.name.trim(), cls: d.cls, units: amount / price, cost: price, price, hist: Array(len).fill(price) });
+      commit('Inversión agregada');
+    },
+  });
+}
+
+// ---------- acciones
+const byId = (list, id) => list.find(x => x.id === id);
+const ACTIONS = {
+  'close-modal': closeModal,
+  'new-tx': () => state.wallets.length ? txForm() : toast('Primero conecta una billetera'),
+  'edit-tx': d => { const t = byId(state.tx, d.id); if (t) txForm(t); },
+  'del-tx': d => { const t = byId(state.tx, d.id); if (!t) return; confirmModal('Eliminar movimiento', `Vas a eliminar <b>${esc(t.desc)}</b> por ${fmt(t.amount)}. El saldo de la billetera se recalcula.`, 'Eliminar', () => { state.tx = state.tx.filter(x => x !== t); commit('Movimiento eliminado'); }); },
+  'more-tx': () => { ui.txLimit += 40; refreshTx(); },
+  'copy-csv': () => {
+    // Las celdas de texto que empiezan por = + - @ llevan un apóstrofo para que la hoja de cálculo no las lea como fórmula.
+    const q = v => { const t = String(v); return '"' + (/^[=+\-@]/.test(t) ? "'" + t : t).replace(/"/g, '""') + '"'; };
+    const rows = filteredTx().map(t => [t.date, t.type, t.cat, (walletById(t.wallet) || {}).name || '', t.desc].map(q).join(',') + ',' + txSign(t) * t.amount);
+    const csv = ['fecha,tipo,categoria,billetera,descripcion,monto', ...rows].join('\n');
+    try { navigator.clipboard.writeText(csv).then(() => toast(`${rows.length} movimientos copiados. Pégalos en una hoja de cálculo.`), () => toast('El navegador no permitió copiar.')); }
+    catch (e) { toast('El navegador no permitió copiar.'); }
+  },
+  'move': () => {
+    if (state.wallets.length < 2) return toast('Necesitas al menos dos billeteras');
+    openModal({
+      title: 'Mover dinero entre billeteras',
+      body: `<div class="form-grid">
+        ${field('Desde', `<select id="f-from" name="from">${walletOpts(state.wallets[0].id)}</select>`)}
+        ${field('Hacia', `<select id="f-to" name="to">${walletOpts(state.wallets[1].id)}</select>`)}
+        ${field('Monto (COP)', money('amount'), '', 'full')}
+      </div><p class="note">En el prototipo el traslado solo se registra. En la versión final se ejecutaría con la autorización de cada entidad.</p>`,
+      submit: 'Mover',
+      onSubmit: d => {
+        const amount = toNum(d.amount), a = walletById(d.from), b = walletById(d.to);
+        if (!a || !b || a === b) return 'Elige dos billeteras distintas.';
+        if (amount <= 0) return 'Escribe un monto mayor que cero.';
+        if (amount > balances()[a.id]) return `Saldo insuficiente en ${a.name}.`;
+        const date = todayISO();
+        state.tx.push({ id: uid(), type: 'interno', dir: 'out', amount, cat: 'Traslados', wallet: a.id, date, desc: 'Traslado a ' + b.name });
+        state.tx.push({ id: uid(), type: 'interno', dir: 'in', amount, cat: 'Traslados', wallet: b.id, date, desc: 'Traslado desde ' + a.name });
+        commit('Traslado registrado');
+      },
+    });
+  },
+  'add-wallet': () => openModal({
+    title: 'Conectar billetera',
+    body: `<p class="note">La conexión es simulada: escribe el saldo actual y Wroot lo consolida. La versión final se conectaría con cada entidad mediante sus API, con autorización del usuario.</p>
+      <div class="form-grid">
+        ${field('Entidad', `<select id="f-preset" name="preset">${opts(Object.keys(WALLET_PRESETS), 'Dale!')}</select>`)}
+        ${field('Nombre para mostrar', `<input id="f-name" name="name" type="text" maxlength="24" placeholder="Opcional">`)}
+        ${field('Saldo actual (COP)', `<input id="f-initial" name="initial" type="number" min="0" max="999999999999" step="1" required inputmode="numeric">`, '', 'full')}
+      </div>`,
+    submit: 'Conectar',
+    onSubmit: d => {
+      const p = WALLET_PRESETS[d.preset] || WALLET_PRESETS['Otra'], name = d.name.trim() || d.preset;
+      if (state.wallets.some(w => w.name.toLowerCase() === name.toLowerCase())) return `Ya tienes una billetera llamada ${name}. Ponle otro nombre.`;
+      state.wallets.push({ id: 'w-' + uid(), name, kind: p.kind, color: p.color, initial: Math.max(0, toNum(d.initial)) });
+      commit(`${name} conectada`);
+    },
+  }),
+  'new-goal': () => goalForm(),
+  'edit-goal': d => { const g = byId(state.goals, d.id); if (g) goalForm(g); },
+  'fund-goal': d => { const g = byId(state.goals, d.id); if (!g) return; state.wallets.length ? fundForm(g) : toast('Primero conecta una billetera'); },
+  'del-goal': d => {
+    const g = byId(state.goals, d.id); if (!g) return;
+    const back = g.saved > 0 && state.wallets.length;
+    openModal({
+      title: 'Eliminar meta', danger: true, submit: 'Eliminar',
+      body: `<p>Vas a eliminar <b>${esc(g.name)}</b>.${back ? ` Los ${fmt(g.saved)} apartados vuelven a la billetera que elijas.` : ''}</p>${back ? field('Devolver a', `<select id="f-wallet" name="wallet">${walletOpts()}</select>`) : ''}`,
+      onSubmit: f => {
+        if (back) state.tx.push({ id: uid(), type: 'interno', dir: 'in', amount: g.saved, cat: 'Metas', wallet: f.wallet, date: todayISO(), desc: 'Retiro de meta: ' + g.name });
+        state.goals = state.goals.filter(x => x !== g); commit('Meta eliminada');
+      },
+    });
+  },
+  'new-rec': () => recForm(),
+  'edit-rec': d => { const r = byId(state.recurring, d.id); if (r) recForm(r); },
+  'del-rec': d => { const r = byId(state.recurring, d.id); if (!r) return; confirmModal('Eliminar pago recurrente', `Vas a eliminar <b>${esc(r.name)}</b>. Los pagos ya registrados se conservan en el historial.`, 'Eliminar', () => { state.recurring = state.recurring.filter(x => x !== r); commit('Pago eliminado'); }); },
+  'pay-rec': d => {
+    const r = byId(state.recurring, d.id); if (!r) return;
+    const w = walletById(r.wallet) || state.wallets[0]; if (!w) return toast('Primero conecta una billetera');
+    state.tx.push({ id: uid(), type: 'gasto', amount: r.amount, cat: r.cat, wallet: w.id, date: todayISO(), desc: r.name });
+    r.day = r.day || parse(r.next).getDate();
+    r.next = advance(r.next, r.freq, r.day);
+    commit(`${r.name} pagado desde ${w.name}. Próximo: ${fmtDate(r.next)}`);
+  },
+  'toggle-rem': d => { const m = byId(state.reminders, d.id); if (m) { m.done = !m.done; commit(); } },
+  'del-rem': d => { state.reminders = state.reminders.filter(m => m.id !== d.id); commit('Recordatorio eliminado'); },
+  'new-hold': () => holdForm(),
+  'sell-hold': d => {
+    const h = byId(state.holdings, d.id); if (!h) return; const v = Math.round(holdValue(h));
+    if (!state.wallets.length) return toast('Primero conecta una billetera');
+    openModal({
+      title: 'Vender ' + h.name, submit: 'Vender todo',
+      body: `<p>Vendes toda la posición al precio simulado actual y recibes <b class="num">${fmt(v)}</b>.</p>${field('Recibir en', `<select id="f-wallet" name="wallet">${walletOpts()}</select>`)}`,
+      onSubmit: f => {
+        state.tx.push({ id: uid(), type: 'interno', dir: 'in', amount: v, cat: 'Inversiones', wallet: f.wallet, date: todayISO(), desc: 'Venta: ' + h.name });
+        state.holdings = state.holdings.filter(x => x !== h); commit('Venta registrada');
+      },
+    });
+  },
+  'sim-day': d => {
+    if (!state.holdings.length) return toast('Agrega una inversión primero');
+    const n = Number(d.n) || 1; for (let i = 0; i < n; i++) stepMarket();
+    commit(n === 1 ? 'Se simuló 1 día de mercado' : `Se simularon ${n} días de mercado`);
+  },
+  'alerts': () => {
+    const al = alerts();
+    openModal({
+      title: 'Alertas y recordatorios',
+      body: al.length ? `<ul class="rows">${al.map(a => { const i = a.auto ? dueInfo(a.date) : whenInfo(a.date); return `<li><span class="grow"><b>${esc(a.title)}</b><small>${fmtDate(a.date)}${a.amount ? ' · ' + fmt(a.amount) : ''}</small></span><span class="pill ${i.cls}">${i.text}</span></li>`; }).join('')}</ul><p class="note">Se muestran los pagos y recordatorios de los próximos 7 días y los atrasados. Adminístralos en <a href="#metas" data-action="close-modal">Metas y pagos</a>.</p>` : '<p class="empty">No tienes pagos ni recordatorios para los próximos 7 días.</p>',
+    });
+  },
+  'auth-switch': () => { setAuthMode(authMode === 'registro' ? 'ingreso' : 'registro'); $(authMode === 'registro' ? '#auth-name' : '#auth-email').focus(); },
+  'logout': () => confirmModal('Cerrar sesión', 'Al salir se borra todo lo que registraste en esta sesión. Para volver a entrar tendrás que registrarte o iniciar sesión de nuevo.', 'Cerrar sesión', logout),
+  'reset': () => confirmModal('Restablecer datos de ejemplo', 'Se borra todo lo que registraste en este navegador y vuelven los datos de demostración.', 'Restablecer', () => { state = seed(); const r = ui.route; ui = freshUi(); ui.route = r; commit('Datos restablecidos'); }),
+};
+
+// ---------- eventos
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el && el.type !== 'checkbox') { const fn = ACTIONS[el.dataset.action]; if (fn) fn(el.dataset, el); return; }
+  if (e.target.id === 'modal' && downOnBackdrop) closeModal();
+});
+let downOnBackdrop = false;
+document.addEventListener('mousedown', e => { downOnBackdrop = e.target.id === 'modal'; });
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.type === 'checkbox' && el.dataset.action) { const fn = ACTIONS[el.dataset.action]; if (fn) fn(el.dataset, el); }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.filter) { ui.filters[el.dataset.filter] = el.value; ui.txLimit = 40; refreshTx(); return; }
+  if (el.closest('#sim-form')) {
+    const s = ui.sim;
+    if (el.name === 'cls') { s.cls = el.value; s.rate = CLASSES[el.value].rate; $('#sim-rate').value = s.rate; }
+    else if (el.name === 'rate') s.rate = Math.max(0, Math.min(60, toDec(el.value)));
+    else if (el.name === 'years') { s.years = Number(el.value) || 1; $('#sim-years-out').textContent = s.years; }
+    else s[el.name] = Math.max(0, toNum(el.value));
+    $('#sim-out').innerHTML = simOut(); drawCharts();
+  }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id === 'auth-form') { e.preventDefault(); submitAuth(e.target); return; }
+  if (e.target.id === 'rem-form') {
+    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target));
+    if (!d.title.trim() || !d.date) return;
+    state.reminders.push({ id: uid(), title: d.title.trim(), date: d.date, done: false }); commit('Recordatorio agregado');
+  } else if (e.target.id === 'sim-form') e.preventDefault();
+});
+$('#modal').addEventListener('close', () => refocus(modalOpener));
+window.addEventListener('hashchange', route);
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawCharts, 120); });
+
+// ---------- acceso simulado: valida el formulario y entra. No guarda ni envía nada.
+let authMode = 'registro';
+function setAuthMode(m) {
+  authMode = m; const reg = m === 'registro';
+  $('#auth-title').textContent = reg ? 'Crea tu cuenta' : 'Inicia sesión';
+  $('#auth-lead').textContent = reg ? 'Regístrate para entrar a la demostración.' : 'Como nada se guarda, cualquier correo y contraseña sirven.';
+  $('#auth-name-field').hidden = !reg;
+  $('#auth-submit').textContent = reg ? 'Crear cuenta y entrar' : 'Entrar';
+  $('#auth-switch-text').textContent = reg ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
+  $('#auth-switch').textContent = reg ? 'Inicia sesión' : 'Regístrate';
+  $('#auth-err').textContent = '';
+}
+function submitAuth(form) {
+  const d = Object.fromEntries(new FormData(form)), reg = authMode === 'registro', email = d.email.trim();
+  const fail = (msg, id) => { $('#auth-err').textContent = msg; $(id).focus(); };
+  if (reg && !d.name.trim()) return fail('Escribe tu nombre.', '#auth-name');
+  if (!email || !$('#auth-email').checkValidity() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Escribe un correo válido, por ejemplo nombre@correo.com.', '#auth-email');
+  if (d.pass.length < 6) return fail('La contraseña debe tener al menos 6 caracteres.', '#auth-pass');
+  form.reset();
+  enter({ name: reg ? d.name.trim() : email.split('@')[0], email });
+}
+function enter(user) {
+  session = user; state = seed(); ui = freshUi();
+  document.body.classList.remove('locked');
+  if (location.hash && location.hash !== '#resumen') location.hash = 'resumen';
+  render(); $('#main').scrollTop = 0;
+  toast(`Hola, ${user.name}. Ya estás dentro de Wroot.`);
+}
+function logout() {
+  session = null; state = null;
+  $('#view').innerHTML = '';
+  document.body.classList.add('locked');
+  setAuthMode('ingreso');
+  setTimeout(() => $('#auth-email').focus(), 0);
+}
+
+// ---------- arranque: siempre empieza en la pantalla de acceso
+try { localStorage.removeItem('wroot.v1'); } catch (e) { /* versión anterior guardaba aquí; ya no se usa */ }
+setAuthMode('registro');
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawCharts);
+
+})();
+</script>
+</body>
+</html>
